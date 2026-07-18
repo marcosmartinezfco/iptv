@@ -11,9 +11,9 @@ Reference: `apache/airflow`'s contributor docs (`contributing-docs/05_pull_reque
 - CI enforces build + lint + format + test on every PR, using free GitHub-hosted macOS runners.
 - Concrete, tool-enforced style rules that target common "AI slop" failure modes (unused code, force-unwraps, oversized functions/files, inconsistent formatting) rather than relying on manual review to catch them.
 - Explicit, written expectation that AI-assisted contributions are disclosed and reviewed by a human before merge.
+- Local pre-commit hooks that mirror the CI lint/format checks, so violations are caught before a PR is even pushed, not just in CI.
 
 **Non-Goals:**
-- Setting up a local pre-commit-hook manager (`pre-commit`/`prek`-equivalent, e.g. a `git` hooks script) — deferred; CI is the enforcement point for now, local `swiftlint`/`swiftformat` runs are manual.
 - Multi-reviewer / CODEOWNERS-enforced review requirements — this is currently a single-maintainer repo; branch protection will require the PR+CI gate but not a second human approver yet. Revisit if/when there are other contributors.
 - Code coverage tooling (Codecov-equivalent) — no test target exists yet in this slice of the codebase (blocked on `add-catalog-browsing-and-playback` landing first); revisit once there's meaningful test surface.
 
@@ -34,10 +34,13 @@ Airflow makes this a written policy but relies on the PR body; we bake a checkbo
 **Branch protection via `gh api repos/:owner/:repo/branches/main/protection` (imperative, run once during apply), not documented as a manual step.**
 Since `gh` is already authenticated in this environment, scripting it is more reliable than a manual "go click these settings" instruction that can be forgotten. Required: `required_status_checks` (the CI job), `required_pull_request_reviews` with `required_approving_review_count: 0` (solo maintainer — the PR+CI gate is the enforcement, not a second approver), `enforce_admins: true` so the rule applies even to the repo owner, `required_conversation_resolution: true`.
 
+**Local hooks via the `pre-commit` framework (`.pre-commit-config.yaml`), the same tool Airflow itself uses (as `prek`, a Rust-based drop-in replacement for the same config format).**
+`pre-commit` is language-agnostic despite its Python packaging — hooks are configured with `language: system` and just shell out to the already-installed `swiftlint`/`swiftformat` binaries, so it doesn't pull Swift tooling through Python. Installed via `brew install pre-commit`. Alternative considered: a hand-rolled `.git/hooks/pre-commit` shell script — rejected because `pre-commit` gives per-hook file filtering (only lints staged/changed files, matching what Airflow's docs describe), a standard `pre-commit install` onboarding step, and an escape hatch (`git commit --no-verify`) contributors already know from other projects.
+
 ## Risks / Trade-offs
 
 - [`enforce_admins: true` means even the maintainer can't push directly to `main` in an emergency] → Acceptable trade-off for a personal project; can be temporarily disabled via `gh api` if ever truly needed, and re-enabled after.
-- [No local pre-commit hook means a contributor can push a PR that immediately fails CI on lint] → Documented in `CONTRIBUTING.md` to run `swiftlint` / `swiftformat --lint` manually before pushing; acceptable since CI catches it either way and this is a small, mostly-solo repo for now. Local hook automation is a named follow-up, not silently dropped.
+- [`pre-commit install` is an opt-in step a contributor can forget to run, so local hooks aren't guaranteed] → CI remains the actual enforcement point regardless; the local hook is a fast-feedback convenience documented as a required setup step in `CONTRIBUTING.md`, not a substitute for the CI gate.
 - [SwiftLint/SwiftFormat rule choices are opinionated and could be too strict early on, causing friction] → Start with a moderate rule set (warnings for style, errors only for the concrete anti-slop rules listed above); tune thresholds later based on real friction rather than guessing upfront.
 - [`required_approving_review_count: 0` means CI-passing AI-generated PRs could theoretically self-merge without human eyes] → The PR template's Gen-AI disclosure + "what did you verify" fields exist precisely to force the human-review step to happen in the PR description even without a second reviewer; this is a process control, not a technical one, and is the accepted trade-off for a solo-maintainer repo.
 
@@ -49,4 +52,4 @@ Since `gh` is already authenticated in this environment, scripting it is more re
 
 ## Open Questions
 
-- None blocking. Local pre-commit-hook automation and code coverage tooling are explicitly deferred, not forgotten — track as follow-up changes once there's a test target and more than one contributor.
+- None blocking. Code coverage tooling is explicitly deferred, not forgotten — track as a follow-up change once there's a meaningful test target.

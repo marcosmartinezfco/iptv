@@ -16,8 +16,14 @@
 - [ ] 3.2 Add `.github/pull_request_template.md` with description, testing performed, and a required Gen-AI disclosure field
 - [ ] 3.3 Add `CODEOWNERS`
 
-## 4. Branch protection
+## 4. Local hooks
 
-- [ ] 4.1 Open and merge the PR containing this change's files (last change landing before protection is enforced)
-- [ ] 4.2 Enable branch protection on `main` via `gh api`: required status check (CI job), required conversation resolution, `enforce_admins`, PR required with 0 required approving reviews
-- [ ] 4.3 Verify protection is active: confirm a direct push to `main` is rejected
+- [ ] 4.1 Add `.pre-commit-config.yaml` with `language: system` hooks calling `swiftlint` and `swiftformat` on staged files
+- [ ] 4.2 Run `pre-commit install` locally and verify a hook catches a deliberately introduced violation
+- [ ] 4.3 Document the `pre-commit install` setup step in `CONTRIBUTING.md`
+
+## 5. Branch protection
+
+- [ ] 5.1 Open and merge the PR containing this change's files (last change landing before protection is enforced)
+- [ ] 5.2 Enable branch protection on `main` via `gh api`: required status check (CI job), required conversation resolution, `enforce_admins`, PR required with 0 required approving reviews
+- [ ] 5.3 Verify protection is active: confirm a direct push to `main` is rejected

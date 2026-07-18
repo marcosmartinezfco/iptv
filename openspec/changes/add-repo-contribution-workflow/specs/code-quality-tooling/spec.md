@@ -32,3 +32,14 @@ The system SHALL configure `swiftlint` to flag, as errors outside test targets: 
 #### Scenario: Function exceeds configured length
 - **WHEN** a function's body exceeds the configured length threshold
 - **THEN** `swiftlint` SHALL report a warning
+
+### Requirement: Local pre-commit hooks mirror CI lint/format checks
+The system SHALL provide a `.pre-commit-config.yaml` (via the `pre-commit` framework) running `swiftlint` and `swiftformat` on staged files, so contributors can catch violations locally before pushing.
+
+#### Scenario: Contributor commits with hooks installed
+- **WHEN** a contributor has run `pre-commit install` and commits a change with a lint or format violation in a staged file
+- **THEN** the commit SHALL be blocked locally with the violation reported, before it reaches CI
+
+#### Scenario: Contributor commits without hooks installed
+- **WHEN** a contributor has not run `pre-commit install`
+- **THEN** local commits SHALL proceed without hook enforcement, and CI remains the authoritative gate

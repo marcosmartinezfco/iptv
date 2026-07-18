@@ -11,6 +11,7 @@ Researched `apache/airflow`'s contributor docs for a proven open-source referenc
 - Add `CONTRIBUTING.md` documenting the PR-only workflow, PR quality criteria, coding style pointers, and a **mandatory Gen-AI disclosure requirement** for any AI-assisted PR (adapted from Airflow's Gen-AI contribution policy).
 - Add `.github/pull_request_template.md` with a checklist (description, testing performed, static checks pass, Gen-AI disclosure) so the disclosure requirement is structurally hard to skip.
 - Add `CODEOWNERS` (single owner for now).
+- Add `.pre-commit-config.yaml` (via the `pre-commit` framework, `language: system` hooks calling `swiftlint`/`swiftformat`) so lint/format issues are caught locally before a PR is even pushed, mirroring the CI checks.
 - Configure branch protection on `main` via `gh api`: require PR before merging, require the CI status check to pass, require conversation resolution before merging. No direct pushes to `main`.
 - **BREAKING**: after this lands, direct pushes to `main` will be rejected — all further work (including the in-flight `add-catalog-browsing-and-playback` change) must go through a PR.
 
@@ -27,5 +28,5 @@ Researched `apache/airflow`'s contributor docs for a proven open-source referenc
 
 - Affected: repo root (`CONTRIBUTING.md`, `CODEOWNERS`, `.swiftlint.yml`, `.swiftformat`), `.github/workflows/ci.yml`, `.github/pull_request_template.md`.
 - GitHub repo settings: branch protection rule added on `main` (a shared setting change, not just code).
-- Local dev: `swiftlint`/`swiftformat` now expected tools (installed via Homebrew); no git hook manager introduced yet (no `pre-commit`/`prek` equivalent set up in this change — noted as a follow-up in design.md).
+- Local dev: `swiftlint`/`swiftformat`/`pre-commit` now expected tools (installed via Homebrew); contributors run `pre-commit install` once to enable local hooks.
 - Process impact: from this point forward, changes land via PR + CI, not direct commits to `main`.
