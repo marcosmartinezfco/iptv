@@ -8,13 +8,15 @@ jobs:
   build-and-check:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Show Swift version
         run: swift --version
 
       - name: Install SwiftLint and SwiftFormat
-        run: brew install swiftlint swiftformat
+        run: |
+          brew untap aws/tap || true
+          brew install swiftlint swiftformat
 
       - name: Build
         run: swift build
@@ -26,4 +28,9 @@ jobs:
         run: swiftformat --lint .
 
       - name: Test
-        run: swift test
+        run: |
+          if [ -d Tests ]; then
+            swift test
+          else
+            echo "No Tests/ directory yet — skipping (no XCTest target exists in this slice)"
+          fi
