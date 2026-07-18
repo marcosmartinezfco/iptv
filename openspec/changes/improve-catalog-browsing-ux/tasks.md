@@ -47,7 +47,7 @@
 ## 6. Manual verification
 
 - [x] 6.1 `swift build` succeeds with no warnings under Swift 6 strict concurrency — confirmed via clean `rm -rf .build && swift build`
-- [ ] 6.2 `swift run`: confirm skeleton loading shows on launch, then the country sidebar and alphabetical tile grid with logos render correctly — pending user verification
-- [ ] 6.3 Select a channel with a dead stream URL; confirm the playback error state shows, then confirm it appears excluded when "Show only working channels" is enabled and reappears when disabled — closes out the deferred error-path verification from `add-catalog-browsing-and-playback` — pending user verification
-- [ ] 6.4 Simulate no network on launch (airplane mode); confirm the existing catalog-fetch error/retry state still works correctly with the new skeleton-loading UI in place — pending user verification
-- [ ] 6.5 Verify selecting a country in the sidebar narrows the grid to that country's channels alphabetically, search still narrows further, and starring a country pins it under "Default Countries" (persists across relaunch) — pending user verification
+- [x] 6.2 `swift run`: confirm skeleton loading shows on launch, then the country sidebar and alphabetical tile grid with logos render correctly — verified by user
+- [x] 6.3 Select a channel with a dead stream URL; confirm the playback error state shows, then confirm it appears excluded when "Show only working channels" is enabled and reappears when disabled — closes out the deferred error-path verification from `add-catalog-browsing-and-playback` — verified by user
+- [x] 6.4 Simulate no network on launch (airplane mode); confirm the existing catalog-fetch error/retry state still works correctly with the new skeleton-loading UI in place — verified by user
+- [x] 6.5 Verify selecting a country in the sidebar narrows the grid to that country's channels alphabetically, search still narrows further, and starring a country pins it under "Default Countries" (persists across relaunch) — verified by user
