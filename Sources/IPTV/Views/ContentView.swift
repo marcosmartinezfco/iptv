@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var healthStore = StreamHealthStore()
+    @State private var countryPreferences = CountryPreferencesStore()
     @State private var viewModel = ChannelListViewModel()
     @State private var playerViewModel = PlayerViewModel()
 
@@ -9,8 +10,11 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            sidebar
-                .navigationSplitViewColumnWidth(min: 420, ideal: 560)
+            countrySidebar
+                .navigationSplitViewColumnWidth(min: 220, ideal: 260)
+        } content: {
+            channelContent
+                .navigationSplitViewColumnWidth(min: 380, ideal: 480)
         } detail: {
             detail
         }
@@ -26,23 +30,59 @@ struct ContentView: View {
         .tint(.purple)
     }
 
-    @ViewBuilder
-    private var detail: some View {
+    // MARK: - Country sidebar
+
+    private var countrySidebar: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            if let channel = viewModel.selectedChannel {
-                PlayerView(viewModel: playerViewModel)
-                    .navigationTitle(channel.name)
-            } else {
-                ContentUnavailableView {
-                    Label("Select a channel", systemImage: "play.tv")
+            List(selection: $viewModel.countryFilter) {
+                Label("All Countries", systemImage: "globe")
+                    .tag(String?.none)
+
+                if !defaultCountries.isEmpty {
+                    Section("Default Countries") {
+                        ForEach(defaultCountries, id: \.self) { country in
+                            countryRow(country)
+                        }
+                    }
+                }
+
+                Section("Countries") {
+                    ForEach(otherCountries, id: \.self) { country in
+                        countryRow(country)
+                    }
                 }
             }
         }
+        .navigationTitle("Countries")
     }
 
-    @ViewBuilder
-    private var sidebar: some View {
+    private var defaultCountries: [String] {
+        viewModel.availableCountries.filter(countryPreferences.isDefault)
+    }
+
+    private var otherCountries: [String] {
+        viewModel.availableCountries.filter { !countryPreferences.isDefault($0) }
+    }
+
+    private func countryRow(_ country: String) -> some View {
+        HStack {
+            Text(country)
+            Spacer()
+            Button {
+                countryPreferences.toggleDefault(country)
+            } label: {
+                Image(systemName: countryPreferences.isDefault(country) ? "star.fill" : "star")
+                    .foregroundStyle(countryPreferences.isDefault(country) ? .yellow : .secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .tag(String?.some(country))
+    }
+
+    // MARK: - Channel content
+
+    private var channelContent: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             switch viewModel.loadState {
@@ -60,7 +100,7 @@ struct ContentView: View {
                 channelGrid
             }
         }
-        .navigationTitle("Channels")
+        .navigationTitle(viewModel.countryFilter ?? "All Countries")
     }
 
     private var skeletonGrid: some View {
@@ -77,60 +117,52 @@ struct ContentView: View {
     private var channelGrid: some View {
         VStack(spacing: 0) {
             filterBar
-            if viewModel.filteredChannels.isEmpty {
+            if viewModel.alphabeticalChannels.isEmpty {
                 ContentUnavailableView.search(text: viewModel.searchText)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 24) {
-                        ForEach(viewModel.groupedChannels, id: \.category) { group in
-                            categorySection(group)
+                    LazyVGrid(columns: gridColumns, spacing: 16) {
+                        ForEach(viewModel.alphabeticalChannels) { channel in
+                            ChannelTileView(
+                                channel: channel,
+                                isSelected: viewModel.selectedChannel == channel
+                            )
+                            .onTapGesture {
+                                viewModel.selectedChannel = channel
+                            }
                         }
                     }
-                    .padding(.vertical, 16)
+                    .padding(16)
                 }
             }
         }
         .searchable(text: $viewModel.searchText, prompt: "Search channels")
     }
 
-    private func categorySection(_ group: (category: String, channels: [Channel])) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(group.category)
-                .font(.title3.bold())
-                .padding(.horizontal, 16)
-
-            LazyVGrid(columns: gridColumns, spacing: 16) {
-                ForEach(group.channels) { channel in
-                    ChannelTileView(
-                        channel: channel,
-                        isSelected: viewModel.selectedChannel == channel
-                    )
-                    .onTapGesture {
-                        viewModel.selectedChannel = channel
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-
     private var filterBar: some View {
-        HStack(spacing: 16) {
-            Picker("Country", selection: $viewModel.countryFilter) {
-                Text("All Countries").tag(String?.none)
-                ForEach(viewModel.availableCountries, id: \.self) { country in
-                    Text(country).tag(String?.some(country))
-                }
-            }
-            .pickerStyle(.menu)
-            .fixedSize()
-
+        HStack {
             Toggle("Show only working channels", isOn: $viewModel.showOnlyWorkingChannels)
                 .toggleStyle(.switch)
-
             Spacer()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+    }
+
+    // MARK: - Player detail
+
+    @ViewBuilder
+    private var detail: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            if let channel = viewModel.selectedChannel {
+                PlayerView(viewModel: playerViewModel)
+                    .navigationTitle(channel.name)
+            } else {
+                ContentUnavailableView {
+                    Label("Select a channel", systemImage: "play.tv")
+                }
+            }
+        }
     }
 }

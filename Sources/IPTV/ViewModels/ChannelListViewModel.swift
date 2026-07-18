@@ -38,19 +38,9 @@ final class ChannelListViewModel {
         }
     }
 
-    /// Category name to group under when a channel has no categories, so it stays browsable.
-    private static let uncategorized = "Uncategorized"
-
-    var groupedChannels: [(category: String, channels: [Channel])] {
-        var groups: [String: [Channel]] = [:]
-        for channel in filteredChannels {
-            let categories = channel.categories.isEmpty ? [Self.uncategorized] : channel.categories
-            for category in categories {
-                groups[category, default: []].append(channel)
-            }
-        }
-        return groups.keys.sorted().map { category in
-            (category: category, channels: groups[category] ?? [])
+    var alphabeticalChannels: [Channel] {
+        filteredChannels.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
     }
 
