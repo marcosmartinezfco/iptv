@@ -1,7 +1,7 @@
 # stream-playback Specification
 
 ## Purpose
-TBD - created by archiving change add-catalog-browsing-and-playback. Update Purpose after archive.
+Play a selected channel's stream via AVKit, surfacing loading, failure, and unavailable states.
 
 ## Requirements
 

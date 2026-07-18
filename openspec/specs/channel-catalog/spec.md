@@ -1,7 +1,7 @@
 # channel-catalog Specification
 
 ## Purpose
-TBD - created by archiving change add-catalog-browsing-and-playback. Update Purpose after archive.
+Fetch, decode, join, and cache the iptv-org channel catalog (channels, streams, countries, categories) in memory for the app session.
 
 ## Requirements
 

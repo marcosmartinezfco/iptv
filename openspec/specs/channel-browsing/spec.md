@@ -1,7 +1,7 @@
 # channel-browsing Specification
 
 ## Purpose
-TBD - created by archiving change add-catalog-browsing-and-playback. Update Purpose after archive.
+Let the user browse, filter (by country/category), search, and select channels from the fetched catalog.
 
 ## Requirements
 
