@@ -7,6 +7,7 @@ import Foundation
 /// are fully alphabetical.
 enum BroadcastOrder {
     /// Country name (as joined onto `Channel.country`) → channel ids in dial order.
+    // swiftformat:disable trailingCommas
     private static let orderByCountry: [String: [String]] = [
         "Spain": [
             "La1.es",
@@ -32,9 +33,10 @@ enum BroadcastOrder {
             "TEN.es",
             "ParamountNetwork.es",
             "Gol.es",
-            "RealMadridTV.es",
-        ],
+            "RealMadridTV.es"
+        ]
     ]
+    // swiftformat:enable trailingCommas
 
     /// Rank of a channel within its country's dial, or nil when not curated.
     static func rank(channelID: String, country: String?) -> Int? {
