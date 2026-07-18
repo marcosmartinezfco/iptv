@@ -35,7 +35,7 @@ final class ChannelListViewModel {
     var filteredChannels: [Channel] {
         channels.filter { channel in
             (countryFilter == nil || channel.country == countryFilter)
-                && (categoryFilter == nil || channel.categories.contains(categoryFilter!))
+                && (categoryFilter.map(channel.categories.contains) ?? true)
                 && (searchText.isEmpty || channel.name.localizedCaseInsensitiveContains(searchText))
         }
     }
