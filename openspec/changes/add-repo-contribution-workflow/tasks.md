@@ -8,7 +8,7 @@
 
 - [x] 2.1 Add `.github/workflows/ci.yml` running on `pull_request` targeting `main`, on `macos-latest`
 - [x] 2.2 CI job installs SwiftLint/SwiftFormat via Homebrew, runs `swift build`, `swiftlint --strict`, `swiftformat --lint`, `swift test`
-- [ ] 2.3 Verify the workflow triggers and passes on a throwaway PR before relying on it as the merge gate
+- [x] 2.3 Verify the workflow triggers and passes on a throwaway PR before relying on it as the merge gate — PR #1, run passed clean after fixing: swift test failing hard with no Tests/ dir, actions/checkout Node 20 deprecation, aws/tap trust warning
 
 ## 3. Contribution docs
 
