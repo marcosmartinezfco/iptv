@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var healthStore = StreamHealthStore()
     @State private var viewModel = ChannelListViewModel()
     @State private var playerViewModel = PlayerViewModel()
 
@@ -17,6 +18,8 @@ struct ContentView: View {
             }
         }
         .task {
+            viewModel.healthStore = healthStore
+            playerViewModel.healthStore = healthStore
             await viewModel.load()
         }
         .onChange(of: viewModel.selectedChannel) { _, newChannel in
@@ -28,8 +31,7 @@ struct ContentView: View {
     private var sidebar: some View {
         switch viewModel.loadState {
         case .loading:
-            ProgressView("Loading channels…")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            skeletonList
         case .failed:
             ContentUnavailableView {
                 Label("Couldn't load channels", systemImage: "wifi.exclamationmark")
@@ -43,14 +45,29 @@ struct ContentView: View {
         }
     }
 
+    private var skeletonList: some View {
+        List {
+            ForEach(0..<8, id: \.self) { _ in
+                SkeletonChannelRowView()
+            }
+        }
+        .navigationTitle("Channels")
+    }
+
     private var channelList: some View {
         VStack(spacing: 0) {
             filterBar
             if viewModel.filteredChannels.isEmpty {
                 ContentUnavailableView.search(text: viewModel.searchText)
             } else {
-                List(viewModel.filteredChannels, selection: $viewModel.selectedChannel) { channel in
-                    Text(channel.name).tag(channel)
+                List(selection: $viewModel.selectedChannel) {
+                    ForEach(viewModel.groupedChannels, id: \.category) { group in
+                        Section(group.category) {
+                            ForEach(group.channels) { channel in
+                                ChannelRowView(channel: channel).tag(channel)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -59,19 +76,14 @@ struct ContentView: View {
     }
 
     private var filterBar: some View {
-        HStack {
+        VStack(alignment: .leading, spacing: 4) {
             Picker("Country", selection: $viewModel.countryFilter) {
                 Text("All Countries").tag(String?.none)
                 ForEach(viewModel.availableCountries, id: \.self) { country in
                     Text(country).tag(String?.some(country))
                 }
             }
-            Picker("Category", selection: $viewModel.categoryFilter) {
-                Text("All Categories").tag(String?.none)
-                ForEach(viewModel.availableCategories, id: \.self) { category in
-                    Text(category).tag(String?.some(category))
-                }
-            }
+            Toggle("Show only working channels", isOn: $viewModel.showOnlyWorkingChannels)
         }
         .padding(.horizontal)
         .padding(.top, 8)

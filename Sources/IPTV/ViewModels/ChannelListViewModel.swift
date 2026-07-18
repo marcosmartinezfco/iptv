@@ -16,9 +16,10 @@ final class ChannelListViewModel {
 
     var searchText: String = ""
     var countryFilter: String?
-    var categoryFilter: String?
+    var showOnlyWorkingChannels: Bool = false
 
     private let service: ChannelService
+    var healthStore: StreamHealthStore?
 
     init(service: ChannelService = IPTVOrgChannelService()) {
         self.service = service
@@ -28,15 +29,27 @@ final class ChannelListViewModel {
         Set(channels.compactMap(\.country)).sorted()
     }
 
-    var availableCategories: [String] {
-        Set(channels.flatMap(\.categories)).sorted()
-    }
-
     var filteredChannels: [Channel] {
         channels.filter { channel in
             (countryFilter == nil || channel.country == countryFilter)
-                && (categoryFilter.map(channel.categories.contains) ?? true)
                 && (searchText.isEmpty || channel.name.localizedCaseInsensitiveContains(searchText))
+                && (!showOnlyWorkingChannels || (healthStore?.isWorking(channel.id) ?? true))
+        }
+    }
+
+    /// Category name to group under when a channel has no categories, so it stays browsable.
+    private static let uncategorized = "Uncategorized"
+
+    var groupedChannels: [(category: String, channels: [Channel])] {
+        var groups: [String: [Channel]] = [:]
+        for channel in filteredChannels {
+            let categories = channel.categories.isEmpty ? [Self.uncategorized] : channel.categories
+            for category in categories {
+                groups[category, default: []].append(channel)
+            }
+        }
+        return groups.keys.sorted().map { category in
+            (category: category, channels: groups[category] ?? [])
         }
     }
 

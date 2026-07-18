@@ -15,10 +15,13 @@ final class PlayerViewModel {
 
     private(set) var playbackState: PlaybackState = .idle
     private(set) var player: AVPlayer?
+    var healthStore: StreamHealthStore?
 
     private var statusObservation: NSKeyValueObservation?
+    private var currentChannelID: Channel.ID?
 
     func play(channel: Channel?) {
+        currentChannelID = channel?.id
         statusObservation = nil
         player?.pause()
         player = nil
@@ -52,7 +55,11 @@ final class PlayerViewModel {
         case .readyToPlay:
             playbackState = .playing
         case .failed:
-            playbackState = .failed(player?.currentItem?.error ?? URLError(.unknown))
+            let error = player?.currentItem?.error ?? URLError(.unknown)
+            playbackState = .failed(error)
+            if let currentChannelID {
+                healthStore?.markFailed(currentChannelID)
+            }
         case .unknown:
             break
         @unknown default:
