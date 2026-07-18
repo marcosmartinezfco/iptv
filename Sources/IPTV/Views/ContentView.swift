@@ -124,7 +124,7 @@ struct ContentView: View {
             Divider()
                 .overlay(Theme.stroke)
 
-            if viewModel.alphabeticalChannels.isEmpty {
+            if viewModel.displayChannels.isEmpty {
                 if viewModel.searchText.isEmpty {
                     ContentUnavailableView {
                         Label("No channels", systemImage: "tv.slash")
@@ -137,7 +137,7 @@ struct ContentView: View {
             } else {
                 ScrollView {
                     LazyVGrid(columns: gridColumns, spacing: 14) {
-                        ForEach(viewModel.alphabeticalChannels) { channel in
+                        ForEach(viewModel.displayChannels) { channel in
                             ChannelTileView(
                                 channel: channel,
                                 isSelected: viewModel.selectedChannel == channel
@@ -156,10 +156,20 @@ struct ContentView: View {
 
     private var statusBar: some View {
         HStack(spacing: 12) {
-            Text("\(viewModel.alphabeticalChannels.count) channels")
+            Text("\(viewModel.displayChannels.count) channels")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
+
+            if viewModel.isProbing {
+                HStack(spacing: 5) {
+                    ProgressView()
+                        .controlSize(.mini)
+                    Text("Checking streams…")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+            }
 
             Spacer()
 

@@ -35,6 +35,14 @@
 - [x] 7.1 Add Pow to `Package.swift` for tile hover/selection micro-interactions
 - [x] 7.2 Replace `ChannelRowView`/`SkeletonChannelRowView` with `ChannelTileView`/`SkeletonChannelTileView` (poster-style tiles in a `LazyVGrid`), dark theme via `.preferredColorScheme(.dark)`
 - [x] 7.3 Exclude channels with no `streamURL` from `filteredChannels`
+- [x] 7.4 Coal + ember `Theme` palette applied across sidebar, grid, status bar, and player placeholder
+
+## 8. Logos fix, dial ordering, and background stream health
+
+- [x] 8.1 Fix missing logos: iptv-org removed `channel.logo` — fetch `logos.json` and join best raster logo per channel (prefer non-SVG, `in_use`)
+- [x] 8.2 Curated broadcast/dial ordering (`BroadcastOrder`): Spain's TDT order (La 1, La 2, Antena 3, Cuatro, Telecinco, La Sexta, …) first, remainder alphabetical; other countries fully alphabetical (no LCN data exists in iptv-org)
+- [x] 8.3 "Working only" toggle defaults to on
+- [x] 8.4 Background stream probing (`StreamProber` + `probeCurrentCountry`): on country selection, GET each stream playlist (6s timeout, 8 concurrent), mark dead streams in `StreamHealthStore` so they disappear live; "Checking streams…" indicator in the status bar; skipped for All Countries
 
 ## 6. Manual verification
 
