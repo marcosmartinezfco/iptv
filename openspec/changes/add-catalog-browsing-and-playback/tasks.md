@@ -29,5 +29,5 @@
 ## 5. Manual verification
 
 - [x] 5.1 `swift build` succeeds with no warnings under Swift 6 strict concurrency — confirmed clean
-- [ ] 5.2 Manually run via `swift run`: catalog loads, filters/search work, at least one known-good HLS channel plays audio/video — pending user verification (see run instructions)
-- [ ] 5.3 Manually verify error paths: airplane mode / no network on launch, and selecting a channel with a dead stream URL — pending user verification
+- [x] 5.2 Manually run via `swift run`: catalog loads, filters/search work, at least one known-good HLS channel plays audio/video — confirmed by user; UX polish deferred to a follow-up change
+- [ ] 5.3 Manually verify error paths: airplane mode / no network on launch, and selecting a channel with a dead stream URL — deferred
