@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Install SwiftLint and SwiftFormat
+        run: |
+          brew untap aws/tap || true
+          brew install swiftlint swiftformat
+
+      - name: Build
+        run: swift build
+
+      - name: Lint
+        run: swiftlint lint --strict
+
+      - name: Check formatting
+        run: swiftformat --lint .
+
+      - name: Test
+        run: |
+          if [ -d Tests ]; then
+            swift test
+          else
+            echo "No Tests/ directory yet — skipping (no XCTest target exists in this slice)"
+          fi

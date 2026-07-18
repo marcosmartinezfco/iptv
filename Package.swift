@@ -4,12 +4,12 @@ import PackageDescription
 let package = Package(
     name: "IPTV",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v14),
     ],
     targets: [
         .executableTarget(
             name: "IPTV",
             path: "Sources/IPTV"
-        )
+        ),
     ]
 )
