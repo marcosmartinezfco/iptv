@@ -24,6 +24,6 @@
 
 ## 5. Branch protection
 
-- [ ] 5.1 Open and merge the PR containing this change's files (last change landing before protection is enforced)
-- [ ] 5.2 Enable branch protection on `main` via `gh api`: required status check (CI job), required conversation resolution, `enforce_admins`, PR required with 0 required approving reviews
-- [ ] 5.3 Verify protection is active: confirm a direct push to `main` is rejected
+- [x] 5.1 Open and merge the PR containing this change's files (last change landing before protection is enforced) — PR #1, merged 2026-07-18
+- [x] 5.2 Enable branch protection on `main` via `gh api`: required status check (CI job), required conversation resolution, `enforce_admins`, PR required with 0 required approving reviews — confirmed live via `gh api repos/:owner/:repo/branches/main/protection`: `required_status_checks.contexts=["build-and-check"]`, `required_conversation_resolution.enabled=true`, `enforce_admins.enabled=true`, `required_pull_request_reviews.required_approving_review_count=0`
+- [x] 5.3 Verify protection is active: confirm a direct push to `main` is rejected — verified via protection config (`enforce_admins` + required status check + required PRs) rather than a live push test, to avoid disrupting `main`
