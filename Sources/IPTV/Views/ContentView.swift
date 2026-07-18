@@ -6,15 +6,15 @@ struct ContentView: View {
     @State private var viewModel = ChannelListViewModel()
     @State private var playerViewModel = PlayerViewModel()
 
-    private let gridColumns = [GridItem(.adaptive(minimum: 110, maximum: 140), spacing: 16)]
+    private let gridColumns = [GridItem(.adaptive(minimum: 132, maximum: 132), spacing: 14)]
 
     var body: some View {
         NavigationSplitView {
             countrySidebar
-                .navigationSplitViewColumnWidth(min: 220, ideal: 260)
+                .navigationSplitViewColumnWidth(min: 210, ideal: 240)
         } content: {
             channelContent
-                .navigationSplitViewColumnWidth(min: 380, ideal: 480)
+                .navigationSplitViewColumnWidth(min: 400, ideal: 500)
         } detail: {
             detail
         }
@@ -27,33 +27,49 @@ struct ContentView: View {
             playerViewModel.play(channel: newChannel)
         }
         .preferredColorScheme(.dark)
-        .tint(.purple)
+        .tint(Theme.accent)
+        .background(Theme.background)
     }
 
     // MARK: - Country sidebar
 
     private var countrySidebar: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            List(selection: $viewModel.countryFilter) {
-                Label("All Countries", systemImage: "globe")
-                    .tag(String?.none)
+        List(selection: $viewModel.countryFilter) {
+            Label {
+                Text("All Countries")
+            } icon: {
+                Image(systemName: "globe")
+                    .foregroundStyle(Theme.accent)
+            }
+            .tag(String?.none)
 
-                if !defaultCountries.isEmpty {
-                    Section("Default Countries") {
-                        ForEach(defaultCountries, id: \.self) { country in
-                            countryRow(country)
-                        }
-                    }
-                }
-
-                Section("Countries") {
-                    ForEach(otherCountries, id: \.self) { country in
-                        countryRow(country)
+            if !defaultCountries.isEmpty {
+                Section("Favorites") {
+                    ForEach(defaultCountries, id: \.self) { country in
+                        CountrySidebarRow(
+                            country: country,
+                            isFavorite: true,
+                            toggleFavorite: { countryPreferences.toggleDefault(country) }
+                        )
+                        .tag(String?.some(country))
                     }
                 }
             }
+
+            Section("All") {
+                ForEach(otherCountries, id: \.self) { country in
+                    CountrySidebarRow(
+                        country: country,
+                        isFavorite: false,
+                        toggleFavorite: { countryPreferences.toggleDefault(country) }
+                    )
+                    .tag(String?.some(country))
+                }
+            }
         }
+        .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
+        .background(Theme.background)
         .navigationTitle("Countries")
     }
 
@@ -65,63 +81,62 @@ struct ContentView: View {
         viewModel.availableCountries.filter { !countryPreferences.isDefault($0) }
     }
 
-    private func countryRow(_ country: String) -> some View {
-        HStack {
-            Text(country)
-            Spacer()
-            Button {
-                countryPreferences.toggleDefault(country)
-            } label: {
-                Image(systemName: countryPreferences.isDefault(country) ? "star.fill" : "star")
-                    .foregroundStyle(countryPreferences.isDefault(country) ? .yellow : .secondary)
-            }
-            .buttonStyle(.plain)
-        }
-        .tag(String?.some(country))
-    }
-
     // MARK: - Channel content
 
     private var channelContent: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
+        Group {
             switch viewModel.loadState {
             case .loading:
                 skeletonGrid
             case .failed:
                 ContentUnavailableView {
                     Label("Couldn't load channels", systemImage: "wifi.exclamationmark")
+                } description: {
+                    Text("Check your connection and try again.")
                 } actions: {
                     Button("Retry") {
                         Task { await viewModel.load() }
                     }
+                    .buttonStyle(.borderedProminent)
                 }
             case .loaded:
                 channelGrid
             }
         }
+        .background(Theme.background)
         .navigationTitle(viewModel.countryFilter ?? "All Countries")
     }
 
     private var skeletonGrid: some View {
         ScrollView {
-            LazyVGrid(columns: gridColumns, spacing: 16) {
-                ForEach(0..<12, id: \.self) { _ in
+            LazyVGrid(columns: gridColumns, spacing: 14) {
+                ForEach(0..<15, id: \.self) { _ in
                     SkeletonChannelTileView()
                 }
             }
-            .padding(16)
+            .padding(20)
         }
     }
 
     private var channelGrid: some View {
         VStack(spacing: 0) {
-            filterBar
+            statusBar
+            Divider()
+                .overlay(Theme.stroke)
+
             if viewModel.alphabeticalChannels.isEmpty {
-                ContentUnavailableView.search(text: viewModel.searchText)
+                if viewModel.searchText.isEmpty {
+                    ContentUnavailableView {
+                        Label("No channels", systemImage: "tv.slash")
+                    } description: {
+                        Text("No channels match the current filters.")
+                    }
+                } else {
+                    ContentUnavailableView.search(text: viewModel.searchText)
+                }
             } else {
                 ScrollView {
-                    LazyVGrid(columns: gridColumns, spacing: 16) {
+                    LazyVGrid(columns: gridColumns, spacing: 14) {
                         ForEach(viewModel.alphabeticalChannels) { channel in
                             ChannelTileView(
                                 channel: channel,
@@ -132,21 +147,32 @@ struct ContentView: View {
                             }
                         }
                     }
-                    .padding(16)
+                    .padding(20)
                 }
             }
         }
-        .searchable(text: $viewModel.searchText, prompt: "Search channels")
+        .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "Search channels")
     }
 
-    private var filterBar: some View {
-        HStack {
-            Toggle("Show only working channels", isOn: $viewModel.showOnlyWorkingChannels)
-                .toggleStyle(.switch)
+    private var statusBar: some View {
+        HStack(spacing: 12) {
+            Text("\(viewModel.alphabeticalChannels.count) channels")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+
             Spacer()
+
+            Toggle(isOn: $viewModel.showOnlyWorkingChannels) {
+                Text("Working only")
+                    .font(.system(size: 11, weight: .medium))
+            }
+            .toggleStyle(.switch)
+            .controlSize(.mini)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 8)
+        .background(Theme.background)
     }
 
     // MARK: - Player detail
@@ -159,10 +185,43 @@ struct ContentView: View {
                 PlayerView(viewModel: playerViewModel)
                     .navigationTitle(channel.name)
             } else {
-                ContentUnavailableView {
-                    Label("Select a channel", systemImage: "play.tv")
+                VStack(spacing: 14) {
+                    Image(systemName: "play.tv")
+                        .font(.system(size: 44, weight: .light))
+                        .foregroundStyle(Theme.accent.opacity(0.8))
+                    Text("Select a channel to start watching")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
                 }
             }
         }
+    }
+}
+
+// MARK: - Sidebar row
+
+private struct CountrySidebarRow: View {
+    let country: String
+    let isFavorite: Bool
+    let toggleFavorite: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        HStack {
+            Text(country)
+            Spacer()
+            if isFavorite || isHovering {
+                Button(action: toggleFavorite) {
+                    Image(systemName: isFavorite ? "star.fill" : "star")
+                        .font(.system(size: 11))
+                        .foregroundStyle(isFavorite ? Theme.accent : .secondary)
+                }
+                .buttonStyle(.plain)
+                .help(isFavorite ? "Remove from Favorites" : "Add to Favorites")
+            }
+        }
+        .contentShape(Rectangle())
+        .onHover { isHovering = $0 }
     }
 }

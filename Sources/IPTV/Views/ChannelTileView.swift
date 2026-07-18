@@ -9,35 +9,48 @@ struct ChannelTileView: View {
     @State private var isHovering = false
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             logoView
-                .frame(width: 100, height: 100)
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(
-                            isSelected ? Color.accentColor : Color.white.opacity(0.08),
-                            lineWidth: isSelected ? 2 : 1
-                        )
-                )
-                .shadow(color: .black.opacity(isHovering ? 0.5 : 0.2), radius: isHovering ? 12 : 4, y: isHovering ? 6 : 2)
-                .scaleEffect(isHovering ? 1.06 : 1.0)
-                .changeEffect(.jump(height: 8), value: isSelected)
+                .frame(maxWidth: .infinity)
+                .frame(height: 96)
+                .padding(.top, 14)
+                .padding(.horizontal, 14)
 
             Text(channel.name)
-                .font(.caption)
-                .foregroundStyle(isSelected ? .primary : .secondary)
-                .lineLimit(2)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(isSelected || isHovering ? .primary : .secondary)
+                .lineLimit(2, reservesSpace: true)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 10)
+                .padding(.top, 10)
+                .padding(.bottom, 12)
         }
-        .frame(width: 120)
-        .contentShape(Rectangle())
+        .frame(width: 132)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(isHovering ? Theme.surfaceRaised : Theme.surface)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(
+                    isSelected ? Theme.accent : (isHovering ? Color.white.opacity(0.14) : Theme.stroke),
+                    lineWidth: isSelected ? 1.5 : 1
+                )
+        )
+        .shadow(
+            color: isSelected ? Theme.accent.opacity(0.25) : .black.opacity(isHovering ? 0.4 : 0),
+            radius: isSelected ? 10 : 8,
+            y: isHovering ? 4 : 2
+        )
+        .scaleEffect(isHovering ? 1.03 : 1.0)
+        .changeEffect(.glow(color: Theme.accent.opacity(0.6), radius: 24), value: isSelected, isEnabled: isSelected)
+        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .onHover { hovering in
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
                 isHovering = hovering
             }
         }
+        .animation(.easeOut(duration: 0.15), value: isSelected)
     }
 
     @ViewBuilder
@@ -48,7 +61,6 @@ struct ChannelTileView: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .padding(12)
                 } else {
                     fallbackIcon
                 }
@@ -59,10 +71,9 @@ struct ChannelTileView: View {
     }
 
     private var fallbackIcon: some View {
-        Image(systemName: "tv.circle.fill")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .padding(20)
-            .foregroundStyle(.secondary)
+        Image(systemName: "tv")
+            .font(.system(size: 34, weight: .light))
+            .foregroundStyle(.tertiary)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
