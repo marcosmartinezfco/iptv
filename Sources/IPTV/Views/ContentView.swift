@@ -110,7 +110,7 @@ struct ContentView: View {
     private var skeletonGrid: some View {
         ScrollView {
             LazyVGrid(columns: gridColumns, spacing: 14) {
-                ForEach(0..<15, id: \.self) { _ in
+                ForEach(0 ..< 15, id: \.self) { _ in
                     SkeletonChannelTileView()
                 }
             }
@@ -187,7 +187,6 @@ struct ContentView: View {
 
     // MARK: - Player detail
 
-    @ViewBuilder
     private var detail: some View {
         ZStack {
             Color.black.ignoresSafeArea()

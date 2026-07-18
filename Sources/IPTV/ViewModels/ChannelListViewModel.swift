@@ -50,7 +50,9 @@ final class ChannelListViewModel {
         filteredChannels.sorted { lhs, rhs in
             let lhsRank = BroadcastOrder.rank(channelID: lhs.id, country: lhs.country) ?? Int.max
             let rhsRank = BroadcastOrder.rank(channelID: rhs.id, country: rhs.country) ?? Int.max
-            if lhsRank != rhsRank { return lhsRank < rhsRank }
+            if lhsRank != rhsRank {
+                return lhsRank < rhsRank
+            }
             return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
         }
     }
@@ -96,12 +98,14 @@ final class ChannelListViewModel {
 
                 while next < min(maxConcurrent, targets.count) {
                     let target = targets[next]
-                    group.addTask { (target.id, await prober.isAlive(target.url)) }
+                    group.addTask { await (target.id, prober.isAlive(target.url)) }
                     next += 1
                 }
 
                 for await (channelID, alive) in group {
-                    if Task.isCancelled { break }
+                    if Task.isCancelled {
+                        break
+                    }
                     if alive {
                         healthStore.markWorking(channelID)
                     } else {
@@ -109,7 +113,7 @@ final class ChannelListViewModel {
                     }
                     if next < targets.count {
                         let target = targets[next]
-                        group.addTask { (target.id, await prober.isAlive(target.url)) }
+                        group.addTask { await (target.id, prober.isAlive(target.url)) }
                         next += 1
                     }
                 }

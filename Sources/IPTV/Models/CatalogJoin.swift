@@ -42,9 +42,15 @@ enum CatalogJoin {
         var best: [String: (score: Int, url: URL)] = [:]
         for logo in logos {
             var score = 0
-            if logo.inUse ?? false { score += 2 }
-            if logo.format?.uppercased() != "SVG" { score += 4 }
-            if let current = best[logo.channel], current.score >= score { continue }
+            if logo.inUse ?? false {
+                score += 2
+            }
+            if logo.format?.uppercased() != "SVG" {
+                score += 4
+            }
+            if let current = best[logo.channel], current.score >= score {
+                continue
+            }
             best[logo.channel] = (score, logo.url)
         }
         return best.mapValues(\.url)
