@@ -31,7 +31,8 @@ final class ChannelListViewModel {
 
     var filteredChannels: [Channel] {
         channels.filter { channel in
-            (countryFilter == nil || channel.country == countryFilter)
+            channel.streamURL != nil
+                && (countryFilter == nil || channel.country == countryFilter)
                 && (searchText.isEmpty || channel.name.localizedCaseInsensitiveContains(searchText))
                 && (!showOnlyWorkingChannels || (healthStore?.isWorking(channel.id) ?? true))
         }
