@@ -1,0 +1,42 @@
+included:
+  - Sources
+
+opt_in_rules:
+  - force_unwrapping
+  - redundant_type_annotation
+  - empty_count
+  - closure_end_indentation
+  - toggle_bool
+
+# unused_import / unused_declaration are *analyzer* rules (need
+# `swiftlint analyze` with a compiler log, not plain `swiftlint lint`) — left
+# out of CI for now since they'd need a separate build-log step; revisit if
+# it becomes worth the setup.
+
+disabled_rules:
+  - todo
+
+# Anti-"AI slop" rules: kept as errors so CI hard-fails rather than warns.
+force_unwrapping: error
+force_cast: error
+force_try: error
+
+# Complexity/size limits stay warnings for now — tune based on real friction,
+# see openspec/changes/add-repo-contribution-workflow/design.md.
+function_body_length:
+  warning: 60
+type_body_length:
+  warning: 300
+file_length:
+  warning: 400
+cyclomatic_complexity:
+  warning: 12
+
+line_length:
+  warning: 120
+  ignores_urls: true
+  ignores_comments: true
+
+# NOTE: once a Tests/ target exists, add Tests/.swiftlint.yml with
+# `parent_config: ../.swiftlint.yml` and disable force_unwrapping/force_cast/
+# force_try there — those are expected in test assertions.

@@ -14,6 +14,6 @@ final class ChannelListViewModel {
     }
 
     func load() async {
-        channels = (try? await service.fetchChannels()) ?? []
+        channels = await (try? service.fetchChannels()) ?? []
     }
 }
