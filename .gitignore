@@ -4,3 +4,4 @@
 *.xcodeproj
 DerivedData/
 .vscode/
+.token-savior-cache.json
