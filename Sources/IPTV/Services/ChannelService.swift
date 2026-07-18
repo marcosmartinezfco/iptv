@@ -35,12 +35,14 @@ actor IPTVOrgChannelService: ChannelService {
 
         async let channels: [CatalogDTO.ChannelEntry] = fetchJSON("channels.json")
         async let streams: [CatalogDTO.StreamEntry] = fetchJSON("streams.json")
+        async let logos: [CatalogLogoEntry] = fetchJSON("logos.json")
         async let countries: [CatalogDTO.CountryEntry] = fetchJSON("countries.json")
         async let categories: [CatalogDTO.CategoryEntry] = fetchJSON("categories.json")
 
         let joined = try await CatalogJoin.join(
             channels: channels,
             streams: streams,
+            logos: logos,
             countries: countries,
             categories: categories
         )

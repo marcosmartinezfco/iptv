@@ -6,9 +6,20 @@ let package = Package(
     platforms: [
         .macOS(.v14),
     ],
+    dependencies: [
+        .package(url: "https://github.com/kean/Nuke.git", from: "12.8.0"),
+        .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", from: "1.5.1"),
+        .package(url: "https://github.com/EmergeTools/Pow.git", from: "1.0.6"),
+    ],
     targets: [
         .executableTarget(
             name: "IPTV",
+            dependencies: [
+                .product(name: "Nuke", package: "Nuke"),
+                .product(name: "NukeUI", package: "Nuke"),
+                .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
+                .product(name: "Pow", package: "Pow"),
+            ],
             path: "Sources/IPTV"
         ),
     ]
