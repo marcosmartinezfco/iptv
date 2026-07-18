@@ -6,8 +6,8 @@ import Foundation
 /// here sort alphabetically after the curated block, and countries with no entry
 /// are fully alphabetical.
 enum BroadcastOrder {
-    /// Country name (as joined onto `Channel.country`) → channel ids in dial order.
     // swiftformat:disable trailingCommas
+    /// Country name (as joined onto `Channel.country`) → channel ids in dial order.
     private static let orderByCountry: [String: [String]] = [
         "Spain": [
             "La1.es",
