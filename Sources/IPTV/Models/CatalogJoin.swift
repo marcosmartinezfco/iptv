@@ -6,7 +6,7 @@ enum CatalogJoin {
     static func join(
         channels: [CatalogDTO.ChannelEntry],
         streams: [CatalogDTO.StreamEntry],
-        logos: [CatalogDTO.LogoEntry],
+        logos: [CatalogLogoEntry],
         countries: [CatalogDTO.CountryEntry],
         categories: [CatalogDTO.CategoryEntry]
     ) -> [Channel] {
@@ -38,7 +38,7 @@ enum CatalogJoin {
 
     /// A channel can have several logos; prefer raster formats Nuke can decode
     /// (SVG is not supported by its default decoders), and logos marked in use.
-    private static func bestLogoByChannel(_ logos: [CatalogDTO.LogoEntry]) -> [String: URL] {
+    private static func bestLogoByChannel(_ logos: [CatalogLogoEntry]) -> [String: URL] {
         var best: [String: (score: Int, url: URL)] = [:]
         for logo in logos {
             var score = 0

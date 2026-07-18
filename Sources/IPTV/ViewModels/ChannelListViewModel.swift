@@ -102,7 +102,11 @@ final class ChannelListViewModel {
 
                 for await (channelID, alive) in group {
                     if Task.isCancelled { break }
-                    alive ? healthStore.markWorking(channelID) : healthStore.markFailed(channelID)
+                    if alive {
+                        healthStore.markWorking(channelID)
+                    } else {
+                        healthStore.markFailed(channelID)
+                    }
                     if next < targets.count {
                         let target = targets[next]
                         group.addTask { (target.id, await prober.isAlive(target.url)) }

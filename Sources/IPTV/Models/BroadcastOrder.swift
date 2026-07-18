@@ -32,8 +32,8 @@ enum BroadcastOrder {
             "TEN.es",
             "ParamountNetwork.es",
             "Gol.es",
-            "RealMadridTV.es",
-        ],
+            "RealMadridTV.es"
+        ]
     ]
 
     /// Rank of a channel within its country's dial, or nil when not curated.

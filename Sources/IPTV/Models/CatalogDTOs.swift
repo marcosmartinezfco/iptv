@@ -14,20 +14,6 @@ enum CatalogDTO {
         let url: URL
     }
 
-    /// Logos live in their own `logos.json` endpoint, keyed by channel id
-    /// (the old inline `channel.logo` field was removed from the API).
-    struct LogoEntry: Codable {
-        let channel: String
-        let url: URL
-        let format: String?
-        let inUse: Bool?
-
-        enum CodingKeys: String, CodingKey {
-            case channel, url, format
-            case inUse = "in_use"
-        }
-    }
-
     struct CountryEntry: Codable {
         let code: String
         let name: String
@@ -36,5 +22,21 @@ enum CatalogDTO {
     struct CategoryEntry: Codable {
         let id: String
         let name: String
+    }
+}
+
+/// Logos live in their own `logos.json` endpoint, keyed by channel id
+/// (the old inline `channel.logo` field was removed from the API). Kept
+/// top-level, rather than nested in `CatalogDTO`, so its `CodingKeys` don't
+/// exceed the one-level type-nesting limit.
+struct CatalogLogoEntry: Codable {
+    let channel: String
+    let url: URL
+    let format: String?
+    let inUse: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case channel, url, format
+        case inUse = "in_use"
     }
 }
