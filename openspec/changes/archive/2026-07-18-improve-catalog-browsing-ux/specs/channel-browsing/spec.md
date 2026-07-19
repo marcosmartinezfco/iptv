@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: Display the channel catalog as a browsable tile grid
+### Requirement: Display the channel catalog as a browsable list
 The system SHALL display fetched channels as a poster-style tile grid, each tile showing the channel's name and logo, and SHALL show skeleton/shimmer placeholder tiles while the catalog is being fetched and an error state with retry if the fetch fails.
 
 #### Scenario: Catalog loads successfully
@@ -14,6 +14,14 @@ The system SHALL display fetched channels as a poster-style tile grid, each tile
 #### Scenario: Catalog fetch fails
 - **WHEN** the catalog fetch fails
 - **THEN** the system displays an error message and a retry action that re-triggers the fetch
+
+## REMOVED Requirements
+
+### Requirement: Filter channels by country and category
+**Reason**: Superseded by country-first navigation — category filtering is dropped, and country selection moves from an in-content filter to the primary sidebar (see ADDED "Browse channels country-first, alphabetically" and "Pin default countries").
+**Migration**: None; this is a UI-only change with no persisted state tied to the old filter.
+
+## ADDED Requirements
 
 ### Requirement: Browse channels country-first, alphabetically
 The system SHALL present a country sidebar as the primary navigation entry point — an "All Countries" option plus every country with at least one channel — and SHALL display the selected country's channels as an alphabetically-sorted tile grid.
@@ -40,8 +48,6 @@ The system SHALL let the user star/unstar a country in the sidebar to add or rem
 #### Scenario: Defaults persist across launches
 - **WHEN** the app relaunches
 - **THEN** the previously starred default countries SHALL still appear under "Default Countries"
-
-## ADDED Requirements
 
 ### Requirement: Display channel logos in the channel grid
 The system SHALL display each channel's logo image in its tile when a logo URL is available, and SHALL show a generic fallback icon when the logo is missing or fails to load.
