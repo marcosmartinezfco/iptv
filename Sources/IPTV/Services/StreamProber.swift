@@ -17,6 +17,20 @@ struct StreamProber: Sendable {
     func isAlive(_ url: URL) async -> Bool {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+
+        let maxAttempts = 2
+        for attempt in 1 ... maxAttempts {
+            if await attemptIsAlive(request) {
+                return true
+            }
+            if attempt < maxAttempts {
+                try? await Task.sleep(for: .milliseconds(500))
+            }
+        }
+        return false
+    }
+
+    private func attemptIsAlive(_ request: URLRequest) async -> Bool {
         do {
             let (_, response) = try await urlSession.data(for: request)
             guard let http = response as? HTTPURLResponse else { return false }

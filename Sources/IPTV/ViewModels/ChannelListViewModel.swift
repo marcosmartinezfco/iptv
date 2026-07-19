@@ -81,7 +81,8 @@ final class ChannelListViewModel {
         let targets: [(id: Channel.ID, url: URL)] = channels.compactMap { channel in
             guard channel.country == countryFilter,
                   let url = channel.streamURL,
-                  !healthStore.isProbed(channel.id)
+                  !healthStore.isProbed(channel.id),
+                  channel.id != selectedChannel?.id
             else { return nil }
             return (channel.id, url)
         }
