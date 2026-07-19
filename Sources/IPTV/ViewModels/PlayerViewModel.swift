@@ -54,6 +54,9 @@ final class PlayerViewModel {
         switch status {
         case .readyToPlay:
             playbackState = .playing
+            if let currentChannelID {
+                healthStore?.markWorking(currentChannelID)
+            }
         case .failed:
             let error = player?.currentItem?.error ?? URLError(.unknown)
             playbackState = .failed(error)

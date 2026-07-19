@@ -5,11 +5,12 @@ struct ContentView: View {
     @State private var countryPreferences = CountryPreferencesStore()
     @State private var viewModel = ChannelListViewModel()
     @State private var playerViewModel = PlayerViewModel()
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     private let gridColumns = [GridItem(.adaptive(minimum: 132, maximum: 132), spacing: 14)]
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             countrySidebar
                 .navigationSplitViewColumnWidth(min: 210, ideal: 240)
         } content: {
@@ -22,6 +23,9 @@ struct ContentView: View {
             viewModel.healthStore = healthStore
             playerViewModel.healthStore = healthStore
             await viewModel.load()
+            if viewModel.countryFilter == nil {
+                viewModel.countryFilter = defaultCountries.first
+            }
         }
         .onChange(of: viewModel.selectedChannel) { _, newChannel in
             playerViewModel.play(channel: newChannel)

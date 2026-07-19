@@ -52,9 +52,27 @@ actor IPTVOrgChannelService: ChannelService {
     }
 
     /// Fetches and decodes a JSON array, skipping individual entries that fail to decode
-    /// rather than failing the whole request.
+    /// rather than failing the whole request. Retries once with a short backoff on a
+    /// transient network/HTTP failure before giving up.
     private func fetchJSON<T: Decodable>(_ path: String) async throws -> [T] {
         let url = Self.baseURL.appendingPathComponent(path)
+
+        let maxAttempts = 2
+        var lastError: Error = ChannelServiceError.invalidResponse
+        for attempt in 1 ... maxAttempts {
+            do {
+                return try await fetchJSONAttempt(url)
+            } catch {
+                lastError = error
+                if attempt < maxAttempts {
+                    try? await Task.sleep(for: .milliseconds(500))
+                }
+            }
+        }
+        throw lastError
+    }
+
+    private func fetchJSONAttempt<T: Decodable>(_ url: URL) async throws -> [T] {
         let data: Data
         let response: URLResponse
         do {

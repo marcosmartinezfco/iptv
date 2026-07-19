@@ -4,6 +4,8 @@ import SwiftUI
 struct PlayerView: View {
     var viewModel: PlayerViewModel
 
+    @State private var fullScreenPresenter = StreamFullScreenPresenter()
+
     var body: some View {
         ZStack {
             if let player = viewModel.player {
@@ -32,6 +34,30 @@ struct PlayerView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // AVPlayerView's floating controls own hit-testing across the whole video
+        // frame, which swallows clicks meant for any SwiftUI view overlaid on top of
+        // it — so the expand toggle lives in the window toolbar instead, a
+        // hit-testing region entirely outside the player's bounds.
+        .toolbar {
+            if let player = viewModel.player {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        NSLog("PlayerView: fullscreen toolbar button clicked")
+                        fullScreenPresenter.toggle(player: player)
+                    } label: {
+                        Image(systemName: fullScreenPresenter.isPresenting
+                            ? "arrow.down.right.and.arrow.up.left"
+                            : "arrow.up.left.and.arrow.down.right")
+                    }
+                    .help(fullScreenPresenter.isPresenting ? "Exit Fullscreen" : "Fullscreen")
+                }
+            }
+        }
+        .onChange(of: viewModel.player == nil) { _, playerGone in
+            if playerGone {
+                fullScreenPresenter.dismiss()
+            }
+        }
     }
 }
 
@@ -42,6 +68,15 @@ private struct AVPlayerContainerView: NSViewRepresentable {
         let view = AVPlayerView()
         view.player = player
         view.controlsStyle = .floating
+        // AVKit's own fullscreen control (QuickTime-style). Note it drives Spaces
+        // fullscreen, which macOS only grants to LaunchServices-launched bundles —
+        // it works via Scripts/run-app.sh but silently no-ops under `swift run`;
+        // the toolbar expand button covers that case instead.
+        view.showsFullScreenToggleButton = true
+        // Picture-in-Picture: float the stream in a corner while using other apps.
+        view.allowsPictureInPicturePlayback = true
+        // Pinch-to-zoom on the video (trackpad), double-tap-two-fingers to reset.
+        view.allowsMagnification = true
         return view
     }
 

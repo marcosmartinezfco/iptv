@@ -20,7 +20,19 @@ let package = Package(
                 .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
                 .product(name: "Pow", package: "Pow"),
             ],
-            path: "Sources/IPTV"
+            path: "Sources/IPTV",
+            linkerSettings: [
+                // Embed Info.plist into the binary's __TEXT,__info_plist section so the
+                // bare executable that `swift run` launches still has a bundle identity —
+                // without one, macOS silently refuses window-manager fullscreen (green
+                // button, Cmd+Ctrl+F, toggleFullScreen all no-op).
+                .unsafeFlags([
+                    "-Xlinker", "-sectcreate",
+                    "-Xlinker", "__TEXT",
+                    "-Xlinker", "__info_plist",
+                    "-Xlinker", "Supporting/Info.plist",
+                ]),
+            ]
         ),
     ]
 )
