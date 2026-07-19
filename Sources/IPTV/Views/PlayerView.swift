@@ -5,7 +5,7 @@ struct PlayerView: View {
     var viewModel: PlayerViewModel
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             if let player = viewModel.player {
                 AVPlayerContainerView(player: player)
             }
@@ -30,24 +30,24 @@ struct PlayerView: View {
                     description: Text("This channel has no known stream.")
                 )
             }
-
-            if viewModel.player != nil {
-                Button {
-                    toggleFullScreen()
-                } label: {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .padding(8)
-                        .background(.black.opacity(0.5), in: Circle())
-                        .foregroundStyle(.white)
-                }
-                .buttonStyle(.plain)
-                .padding(12)
-                .zIndex(1)
-                .help("Toggle Fullscreen")
-            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // AVPlayerView's floating controls own hit-testing across the whole video
+        // frame, which swallows clicks meant for any SwiftUI view overlaid on top of
+        // it — so the fullscreen toggle lives in the window toolbar instead, a
+        // hit-testing region entirely outside the player's bounds.
+        .toolbar {
+            if viewModel.player != nil {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        toggleFullScreen()
+                    } label: {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    }
+                    .help("Toggle Fullscreen")
+                }
+            }
+        }
     }
 
     /// Resolves the key window at click time rather than caching a reference —

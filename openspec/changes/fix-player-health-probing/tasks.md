@@ -23,6 +23,7 @@
 - [ ] 4.3 Verify entering and exiting fullscreen via the control works, and playback continues uninterrupted across the transition (manual)
 - [x] 4.4 Fix: capture the hosting `NSWindow` via `viewDidMoveToWindow` instead of a one-shot async read in `makeNSView`, which was racing SwiftUI's view attachment and leaving `window` nil (fullscreen button silently doing nothing)
 - [x] 4.5 Fix: `viewDidMoveToWindow` capture still didn't fix the no-op button in practice — replaced with resolving `NSApp.keyWindow`/`NSApp.mainWindow` directly at click time, which can't race since a click can't happen before the window is key
+- [x] 4.6 Fix: button was still completely inert (no visual response to clicks) even after 4.5 — root cause was `AVPlayerView`'s own floating-controls hit-testing swallowing clicks across the whole video frame regardless of SwiftUI z-order, since it's a plain sibling NSView overlay, not something SwiftUI ordering controls. Moved the fullscreen control into the window toolbar (`.toolbar` on `PlayerView`), a hit-testing region entirely outside the player's bounds
 
 ## 5. Verification
 
