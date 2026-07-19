@@ -5,11 +5,12 @@ struct ContentView: View {
     @State private var countryPreferences = CountryPreferencesStore()
     @State private var viewModel = ChannelListViewModel()
     @State private var playerViewModel = PlayerViewModel()
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     private let gridColumns = [GridItem(.adaptive(minimum: 132, maximum: 132), spacing: 14)]
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             countrySidebar
                 .navigationSplitViewColumnWidth(min: 210, ideal: 240)
         } content: {
@@ -191,7 +192,7 @@ struct ContentView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             if let channel = viewModel.selectedChannel {
-                PlayerView(viewModel: playerViewModel)
+                PlayerView(viewModel: playerViewModel, columnVisibility: $columnVisibility)
                     .navigationTitle(channel.name)
             } else {
                 VStack(spacing: 14) {
