@@ -4,8 +4,6 @@ import SwiftUI
 struct PlayerView: View {
     var viewModel: PlayerViewModel
 
-    @State private var window: NSWindow?
-
     var body: some View {
         ZStack(alignment: .topTrailing) {
             if let player = viewModel.player {
@@ -35,7 +33,7 @@ struct PlayerView: View {
 
             if viewModel.player != nil {
                 Button {
-                    window?.toggleFullScreen(nil)
+                    toggleFullScreen()
                 } label: {
                     Image(systemName: "arrow.up.left.and.arrow.down.right")
                         .font(.system(size: 12, weight: .semibold))
@@ -45,41 +43,20 @@ struct PlayerView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(12)
+                .zIndex(1)
                 .help("Toggle Fullscreen")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(WindowAccessor(window: $window))
-    }
-}
-
-/// Captures the hosting NSWindow and ensures it supports fullscreen, since this
-/// SwiftUI app has no AppDelegate/window controller to configure that otherwise.
-/// Uses `viewDidMoveToWindow` rather than a one-shot async read in `makeNSView`,
-/// since at that point SwiftUI often hasn't attached the view to a window yet —
-/// which was silently leaving `window` nil and making the fullscreen button a no-op.
-private struct WindowAccessor: NSViewRepresentable {
-    @Binding var window: NSWindow?
-
-    func makeNSView(context _: Context) -> NSView {
-        let view = WindowObservingView()
-        view.onWindowChange = { newWindow in
-            guard let newWindow else { return }
-            newWindow.collectionBehavior.insert(.fullScreenPrimary)
-            DispatchQueue.main.async { window = newWindow }
-        }
-        return view
     }
 
-    func updateNSView(_: NSView, context _: Context) {}
-}
-
-private final class WindowObservingView: NSView {
-    var onWindowChange: (NSWindow?) -> Void = { _ in }
-
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        onWindowChange(window)
+    /// Resolves the key window at click time rather than caching a reference —
+    /// caching via NSViewRepresentable races SwiftUI's view-attachment timing and
+    /// can leave a stale/nil window, silently making the button a no-op.
+    private func toggleFullScreen() {
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
+        window.collectionBehavior.insert(.fullScreenPrimary)
+        window.toggleFullScreen(nil)
     }
 }
 

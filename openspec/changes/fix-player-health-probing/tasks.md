@@ -22,6 +22,7 @@
 - [x] 4.2 Add an expand/fullscreen button to `PlayerView` that calls `NSWindow.toggleFullScreen(_:)` on the player's window
 - [ ] 4.3 Verify entering and exiting fullscreen via the control works, and playback continues uninterrupted across the transition (manual)
 - [x] 4.4 Fix: capture the hosting `NSWindow` via `viewDidMoveToWindow` instead of a one-shot async read in `makeNSView`, which was racing SwiftUI's view attachment and leaving `window` nil (fullscreen button silently doing nothing)
+- [x] 4.5 Fix: `viewDidMoveToWindow` capture still didn't fix the no-op button in practice — replaced with resolving `NSApp.keyWindow`/`NSApp.mainWindow` directly at click time, which can't race since a click can't happen before the window is key
 
 ## 5. Verification
 
