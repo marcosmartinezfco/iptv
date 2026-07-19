@@ -3,9 +3,8 @@ import SwiftUI
 
 struct PlayerView: View {
     var viewModel: PlayerViewModel
-    @Binding var columnVisibility: NavigationSplitViewVisibility
 
-    @State private var savedWindowFrame: NSRect?
+    @State private var fullScreenPresenter = StreamFullScreenPresenter()
 
     var body: some View {
         ZStack {
@@ -40,45 +39,23 @@ struct PlayerView: View {
         // it — so the expand toggle lives in the window toolbar instead, a
         // hit-testing region entirely outside the player's bounds.
         .toolbar {
-            if viewModel.player != nil {
+            if let player = viewModel.player {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        toggleExpanded()
+                        NSLog("PlayerView: fullscreen toolbar button clicked")
+                        fullScreenPresenter.toggle(player: player)
                     } label: {
-                        Image(systemName: isExpanded
+                        Image(systemName: fullScreenPresenter.isPresenting
                             ? "arrow.down.right.and.arrow.up.left"
                             : "arrow.up.left.and.arrow.down.right")
                     }
-                    .help(isExpanded ? "Show Sidebar" : "Expand Player")
+                    .help(fullScreenPresenter.isPresenting ? "Exit Fullscreen" : "Fullscreen")
                 }
             }
         }
-    }
-
-    private var isExpanded: Bool {
-        columnVisibility == .detailOnly
-    }
-
-    /// Stream fullscreen: the *video* fills the screen — collapse the sidebar/grid
-    /// columns, resize the window to the screen bounds, and auto-hide the menu bar
-    /// and Dock. Done manually rather than via `NSWindow.toggleFullScreen` because
-    /// macOS only grants Spaces fullscreen to LaunchServices-launched bundles
-    /// (`Scripts/run-app.sh`), silently no-oping under `swift run` — this path
-    /// works identically in both launch modes.
-    private func toggleExpanded() {
-        let expanding = !isExpanded
-        columnVisibility = expanding ? .detailOnly : .all
-        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
-        if expanding {
-            savedWindowFrame = window.frame
-            NSApp.presentationOptions = [.autoHideMenuBar, .autoHideDock]
-            if let screen = window.screen ?? NSScreen.main {
-                window.setFrame(screen.frame, display: true, animate: true)
-            }
-        } else {
-            NSApp.presentationOptions = []
-            if let savedWindowFrame {
-                window.setFrame(savedWindowFrame, display: true, animate: true)
+        .onChange(of: viewModel.player == nil) { _, playerGone in
+            if playerGone {
+                fullScreenPresenter.dismiss()
             }
         }
     }

@@ -195,7 +195,7 @@ struct ContentView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             if let channel = viewModel.selectedChannel {
-                PlayerView(viewModel: playerViewModel, columnVisibility: $columnVisibility)
+                PlayerView(viewModel: playerViewModel)
                     .navigationTitle(channel.name)
             } else {
                 VStack(spacing: 14) {
