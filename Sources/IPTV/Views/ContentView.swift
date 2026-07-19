@@ -23,6 +23,9 @@ struct ContentView: View {
             viewModel.healthStore = healthStore
             playerViewModel.healthStore = healthStore
             await viewModel.load()
+            if viewModel.countryFilter == nil {
+                viewModel.countryFilter = defaultCountries.first
+            }
         }
         .onChange(of: viewModel.selectedChannel) { _, newChannel in
             playerViewModel.play(channel: newChannel)

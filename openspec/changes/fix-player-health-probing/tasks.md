@@ -26,6 +26,11 @@
 - [x] 4.6 Fix: button was still completely inert (no visual response to clicks) even after 4.5 — root cause was `AVPlayerView`'s own floating-controls hit-testing swallowing clicks across the whole video frame regardless of SwiftUI z-order, since it's a plain sibling NSView overlay, not something SwiftUI ordering controls. Moved the fullscreen control into the window toolbar (`.toolbar` on `PlayerView`), a hit-testing region entirely outside the player's bounds
 - [x] 4.7 Fix: even in the toolbar, both the button and native OS fullscreen (green traffic light / Cmd+Ctrl+F) did nothing — confirmed root cause is that `swift run` launches a bare executable with no `.app` bundle/bundle identifier, and macOS silently declines window-manager fullscreen transitions for such a process. Added `Scripts/run-app.sh`, which builds and wraps the binary in a minimal `.app` bundle and launches it via `open`, restoring proper window-manager integration; documented in README
 - [x] 4.8 Fix: `NSWindow.toggleFullScreen` fullscreens the whole three-column app window (sidebar + grid included), not the video — not what "make the stream big" meant. Reworked the expand button to collapse `NavigationSplitView` to `.detailOnly` (video fills the window, sidebar/grid hidden) via a `columnVisibility` binding threaded from `ContentView` into `PlayerView`, and still requests real OS fullscreen alongside it as a bonus when supported
+- [x] 4.9 Restore window fullscreen under plain `swift run` by embedding `Supporting/Info.plist` into the binary's `__TEXT,__info_plist` section via linker flags in `Package.swift` — gives the bare executable a bundle identity so the green traffic light / Cmd+Ctrl+F work again without needing `Scripts/run-app.sh`. Stream-fullscreen (player button: collapse columns + OS fullscreen) and window-fullscreen (green button: all columns stay) are now two distinct, working functionalities. Also made the player button check the window's actual fullscreen state instead of blindly toggling, so exiting via Esc doesn't desync it
+
+## 6. Launch defaults
+
+- [x] 6.1 On launch, when favorite countries exist, auto-select the first favorite (alphabetically) instead of the full global "All Countries" list
 
 ## 5. Verification
 

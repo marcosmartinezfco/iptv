@@ -19,11 +19,11 @@ swift run
 > Note: XCTest/Swift Testing require full Xcode (not just Command Line Tools), so there's
 > no test target yet. Add one back once Xcode is installed.
 
-> **Window-manager features (fullscreen, Spaces) don't work under `swift run`.** It
-> launches a bare executable with no `.app` bundle or bundle identifier, and macOS
-> silently declines fullscreen transitions for such a process — no error, it just does
-> nothing. Use `Scripts/run-app.sh` instead when testing anything fullscreen-related; it
-> builds and wraps the binary in a minimal `.app` bundle, then launches it with `open`:
+> Fullscreen works under plain `swift run`: `Supporting/Info.plist` is embedded into the
+> binary's `__TEXT,__info_plist` section at link time, giving the bare executable a bundle
+> identity — without one, macOS silently refuses window-manager fullscreen transitions.
+> `Scripts/run-app.sh` additionally wraps the binary in a real `.app` bundle and launches
+> it with `open` (proper Dock/app-switcher integration):
 >
 > ```bash
 > Scripts/run-app.sh          # debug build

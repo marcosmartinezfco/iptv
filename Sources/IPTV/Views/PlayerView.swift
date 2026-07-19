@@ -57,15 +57,18 @@ struct PlayerView: View {
         columnVisibility == .detailOnly
     }
 
-    /// Expanding the player means the *video* gets big, not the app window — so this
-    /// collapses the sidebar/channel-grid columns to show only the player, and also
-    /// requests real OS fullscreen as a bonus when the window supports it (silently
-    /// does nothing under `swift run`'s bundle-less process, which is fine — the
-    /// column collapse alone still gives a much larger video area).
+    /// Stream fullscreen: the *video* fills the screen — collapse the sidebar/grid
+    /// columns and enter OS fullscreen together. Distinct from plain window
+    /// fullscreen (green traffic light), which keeps all three columns visible.
+    /// Checks the window's actual fullscreen state rather than blindly toggling,
+    /// so exiting via Esc doesn't leave the button out of sync and re-entering
+    /// fullscreen when it meant to leave.
     private func toggleExpanded() {
-        columnVisibility = isExpanded ? .all : .detailOnly
-        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
-            window.collectionBehavior.insert(.fullScreenPrimary)
+        let expanding = !isExpanded
+        columnVisibility = expanding ? .detailOnly : .all
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
+        window.collectionBehavior.insert(.fullScreenPrimary)
+        if window.styleMask.contains(.fullScreen) != expanding {
             window.toggleFullScreen(nil)
         }
     }
