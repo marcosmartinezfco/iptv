@@ -38,6 +38,8 @@ final class StreamFullScreenPresenter {
         let playerView = AVPlayerView()
         playerView.player = player
         playerView.controlsStyle = .floating
+        playerView.allowsPictureInPicturePlayback = true
+        playerView.allowsMagnification = true
 
         let window = EscapableWindow(
             contentRect: screen.frame,

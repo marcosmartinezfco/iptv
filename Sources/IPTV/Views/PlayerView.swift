@@ -73,6 +73,10 @@ private struct AVPlayerContainerView: NSViewRepresentable {
         // it works via Scripts/run-app.sh but silently no-ops under `swift run`;
         // the toolbar expand button covers that case instead.
         view.showsFullScreenToggleButton = true
+        // Picture-in-Picture: float the stream in a corner while using other apps.
+        view.allowsPictureInPicturePlayback = true
+        // Pinch-to-zoom on the video (trackpad), double-tap-two-fingers to reset.
+        view.allowsMagnification = true
         return view
     }
 
