@@ -17,9 +17,9 @@
 
 ## 4. First release
 
-- [ ] 4.1 Merge this change
-- [ ] 4.2 Tag and push `v0.1.0`
-- [ ] 4.3 Verify the workflow runs and the release is published with the artifact attached
+- [x] 4.1 Merge this change (PR #7)
+- [x] 4.2 Tag and push `v0.1.0`
+- [x] 4.3 Verify the workflow runs and the release is published with the artifact attached — confirmed: https://github.com/marcosmartinezfco/iptv/releases/tag/v0.1.0, downloaded and verified the zip's bundle structure and substituted version (`0.1.0`) locally
 
 ## 5. Verification
 
