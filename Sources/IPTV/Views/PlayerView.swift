@@ -68,6 +68,11 @@ private struct AVPlayerContainerView: NSViewRepresentable {
         let view = AVPlayerView()
         view.player = player
         view.controlsStyle = .floating
+        // AVKit's own fullscreen control (QuickTime-style). Note it drives Spaces
+        // fullscreen, which macOS only grants to LaunchServices-launched bundles —
+        // it works via Scripts/run-app.sh but silently no-ops under `swift run`;
+        // the toolbar expand button covers that case instead.
+        view.showsFullScreenToggleButton = true
         return view
     }
 

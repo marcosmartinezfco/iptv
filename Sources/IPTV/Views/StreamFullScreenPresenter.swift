@@ -13,6 +13,7 @@ import Observation
 @MainActor
 final class StreamFullScreenPresenter {
     private var fullScreenWindow: NSWindow?
+    private var escapeMonitor: Any?
 
     var isPresenting: Bool {
         fullScreenWindow != nil
@@ -53,11 +54,24 @@ final class StreamFullScreenPresenter {
         NSApp.presentationOptions = [.autoHideMenuBar, .autoHideDock]
         window.makeKeyAndOrderFront(nil)
         fullScreenWindow = window
+
+        // AVPlayerView grabs first-responder status and swallows Esc before the
+        // window's cancelOperation ever runs, so intercept it at the event level.
+        escapeMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == 53 else { return event }
+            NSLog("StreamFullScreenPresenter: Esc intercepted, dismissing")
+            self?.dismiss()
+            return nil
+        }
         NSLog("StreamFullScreenPresenter.present: fullscreen window shown at %@", NSStringFromRect(screen.frame))
     }
 
     func dismiss() {
         NSLog("StreamFullScreenPresenter.dismiss: leaving fullscreen")
+        if let escapeMonitor {
+            NSEvent.removeMonitor(escapeMonitor)
+            self.escapeMonitor = nil
+        }
         NSApp.presentationOptions = []
         fullScreenWindow?.contentView = nil
         fullScreenWindow?.orderOut(nil)
