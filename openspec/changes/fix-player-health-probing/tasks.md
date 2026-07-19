@@ -14,12 +14,14 @@
 - [x] 3.1 Add retry (2 attempts, short fixed backoff) to `StreamProber.isAlive`
 - [x] 3.2 Add retry (2 attempts, short fixed backoff) to `ChannelService`'s catalog fetch (`fetchJSON`)
 - [ ] 3.3 Verify a single simulated transient failure (timeout/non-2xx) recovers on retry without marking the channel/fetch as failed (manual)
+- [x] 3.4 Send a browser/player-like `User-Agent` header on probe requests — some hosts allow real players through but block/rate-limit generic HTTP clients, which was a source of false-dead probes independent of transient network failures
 
 ## 4. Fullscreen/expand control on the player
 
 - [x] 4.1 Ensure the app window's `collectionBehavior` includes `.fullScreenPrimary`
 - [x] 4.2 Add an expand/fullscreen button to `PlayerView` that calls `NSWindow.toggleFullScreen(_:)` on the player's window
 - [ ] 4.3 Verify entering and exiting fullscreen via the control works, and playback continues uninterrupted across the transition (manual)
+- [x] 4.4 Fix: capture the hosting `NSWindow` via `viewDidMoveToWindow` instead of a one-shot async read in `makeNSView`, which was racing SwiftUI's view attachment and leaving `window` nil (fullscreen button silently doing nothing)
 
 ## 5. Verification
 

@@ -14,9 +14,16 @@ struct StreamProber: Sendable {
         urlSession = URLSession(configuration: config)
     }
 
+    /// Mimics a real media player/browser rather than a generic HTTP client — several
+    /// free IPTV/CDN hosts allow players through but rate-limit or block bare `URLSession`
+    /// requests, which was causing the probe to mark live streams as dead.
+    private static let playerLikeUserAgent =
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"
+
     func isAlive(_ url: URL) async -> Bool {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        request.setValue(Self.playerLikeUserAgent, forHTTPHeaderField: "User-Agent")
 
         let maxAttempts = 2
         for attempt in 1 ... maxAttempts {

@@ -55,20 +55,32 @@ struct PlayerView: View {
 
 /// Captures the hosting NSWindow and ensures it supports fullscreen, since this
 /// SwiftUI app has no AppDelegate/window controller to configure that otherwise.
+/// Uses `viewDidMoveToWindow` rather than a one-shot async read in `makeNSView`,
+/// since at that point SwiftUI often hasn't attached the view to a window yet —
+/// which was silently leaving `window` nil and making the fullscreen button a no-op.
 private struct WindowAccessor: NSViewRepresentable {
     @Binding var window: NSWindow?
 
     func makeNSView(context _: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            guard let hostWindow = view.window else { return }
-            hostWindow.collectionBehavior.insert(.fullScreenPrimary)
-            window = hostWindow
+        let view = WindowObservingView()
+        view.onWindowChange = { newWindow in
+            guard let newWindow else { return }
+            newWindow.collectionBehavior.insert(.fullScreenPrimary)
+            DispatchQueue.main.async { window = newWindow }
         }
         return view
     }
 
     func updateNSView(_: NSView, context _: Context) {}
+}
+
+private final class WindowObservingView: NSView {
+    var onWindowChange: (NSWindow?) -> Void = { _ in }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        onWindowChange(window)
+    }
 }
 
 private struct AVPlayerContainerView: NSViewRepresentable {
