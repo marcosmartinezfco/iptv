@@ -5,6 +5,8 @@ struct PlayerView: View {
     var viewModel: PlayerViewModel
     @Binding var columnVisibility: NavigationSplitViewVisibility
 
+    @State private var savedWindowFrame: NSRect?
+
     var body: some View {
         ZStack {
             if let player = viewModel.player {
@@ -58,18 +60,26 @@ struct PlayerView: View {
     }
 
     /// Stream fullscreen: the *video* fills the screen — collapse the sidebar/grid
-    /// columns and enter OS fullscreen together. Distinct from plain window
-    /// fullscreen (green traffic light), which keeps all three columns visible.
-    /// Checks the window's actual fullscreen state rather than blindly toggling,
-    /// so exiting via Esc doesn't leave the button out of sync and re-entering
-    /// fullscreen when it meant to leave.
+    /// columns, resize the window to the screen bounds, and auto-hide the menu bar
+    /// and Dock. Done manually rather than via `NSWindow.toggleFullScreen` because
+    /// macOS only grants Spaces fullscreen to LaunchServices-launched bundles
+    /// (`Scripts/run-app.sh`), silently no-oping under `swift run` — this path
+    /// works identically in both launch modes.
     private func toggleExpanded() {
         let expanding = !isExpanded
         columnVisibility = expanding ? .detailOnly : .all
         guard let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
-        window.collectionBehavior.insert(.fullScreenPrimary)
-        if window.styleMask.contains(.fullScreen) != expanding {
-            window.toggleFullScreen(nil)
+        if expanding {
+            savedWindowFrame = window.frame
+            NSApp.presentationOptions = [.autoHideMenuBar, .autoHideDock]
+            if let screen = window.screen ?? NSScreen.main {
+                window.setFrame(screen.frame, display: true, animate: true)
+            }
+        } else {
+            NSApp.presentationOptions = []
+            if let savedWindowFrame {
+                window.setFrame(savedWindowFrame, display: true, animate: true)
+            }
         }
     }
 }

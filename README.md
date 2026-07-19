@@ -19,16 +19,21 @@ swift run
 > Note: XCTest/Swift Testing require full Xcode (not just Command Line Tools), so there's
 > no test target yet. Add one back once Xcode is installed.
 
-> Fullscreen works under plain `swift run`: `Supporting/Info.plist` is embedded into the
-> binary's `__TEXT,__info_plist` section at link time, giving the bare executable a bundle
-> identity — without one, macOS silently refuses window-manager fullscreen transitions.
-> `Scripts/run-app.sh` additionally wraps the binary in a real `.app` bundle and launches
-> it with `open` (proper Dock/app-switcher integration):
+> **Native (Spaces) window fullscreen — green traffic light / Cmd+Ctrl+F — only works
+> when the app is launched as a real `.app` bundle via LaunchServices.** Under plain
+> `swift run` macOS silently declines the transition (even with a bundle identity
+> embedded in the binary); the green button falls back to zoom. Use `Scripts/run-app.sh`
+> when you want that; it wraps the binary in a minimal `.app` and launches it with `open`:
 >
 > ```bash
 > Scripts/run-app.sh          # debug build
 > Scripts/run-app.sh release  # release build
 > ```
+>
+> The player's own expand button doesn't depend on any of this — it fills the screen
+> manually (window resize + auto-hidden menu bar/Dock), so it works under both launch
+> modes. `Supporting/Info.plist` is embedded into the binary's `__TEXT,__info_plist`
+> section at link time so `swift run` and the bundled app share one preferences domain.
 
 ## Project layout
 
