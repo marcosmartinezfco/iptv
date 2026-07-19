@@ -22,3 +22,22 @@ The system SHALL allow the user to toggle between showing all channels and showi
 #### Scenario: Probe retries before marking a channel failed
 - **WHEN** a background probe request for a channel's stream fails or times out
 - **THEN** the system SHALL retry the probe request at least once with a short backoff before marking the channel as failed
+
+### Requirement: Browse channels country-first, alphabetically
+The system SHALL present a country sidebar as the primary navigation entry point — an "All Countries" option plus every country with at least one channel — and SHALL display the selected country's channels as an alphabetically-sorted tile grid. On launch, if one or more default (favorite) countries exist, the system SHALL select the first one (alphabetically) instead of "All Countries".
+
+#### Scenario: Select a country
+- **WHEN** the user selects a country in the sidebar
+- **THEN** the content grid SHALL show only that country's channels, sorted alphabetically by name
+
+#### Scenario: Select "All Countries"
+- **WHEN** the user selects "All Countries"
+- **THEN** the content grid SHALL show every channel (subject to any other active filters), sorted alphabetically by name
+
+#### Scenario: Launch with favorite countries
+- **WHEN** the app launches and one or more countries are marked as default/favorite
+- **THEN** the system SHALL select the first favorite country (alphabetically) instead of showing "All Countries"
+
+#### Scenario: Launch with no favorite countries
+- **WHEN** the app launches and no countries are marked as default/favorite
+- **THEN** the system SHALL show "All Countries", as before

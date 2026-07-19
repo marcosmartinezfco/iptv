@@ -31,3 +31,14 @@ The system SHALL provide a control in the player area that toggles the applicati
 #### Scenario: User exits fullscreen
 - **WHEN** the user exits fullscreen (via the same control or the system's standard fullscreen exit)
 - **THEN** the system SHALL return to the normal windowed layout with the sidebar and channel grid visible
+
+### Requirement: Support Picture-in-Picture and zoom
+The system SHALL allow the user to pop the current stream into a floating Picture-in-Picture window, and SHALL allow the user to magnify (zoom into) the video via a trackpad pinch gesture.
+
+#### Scenario: User starts Picture-in-Picture
+- **WHEN** the user activates Picture-in-Picture on a playing stream
+- **THEN** the system SHALL continue playback in a floating window that stays visible while the user interacts with other applications
+
+#### Scenario: User pinches to zoom
+- **WHEN** the user performs a pinch gesture on the video area
+- **THEN** the system SHALL magnify the video in response
