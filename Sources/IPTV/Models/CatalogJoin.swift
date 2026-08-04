@@ -10,10 +10,19 @@ enum CatalogJoin {
         countries: [CatalogDTO.CountryEntry],
         categories: [CatalogDTO.CategoryEntry]
     ) -> [Channel] {
-        let streamURLByChannel = Dictionary(
-            streams.compactMap { stream in stream.channel.map { ($0, stream.url) } },
-            uniquingKeysWith: { first, _ in first }
-        )
+        // Keep every stream URL per channel (source order), not just the first —
+        // playback fails over through the list. The curated official-broadcaster
+        // URL, when one exists, goes first and duplicates of it are dropped.
+        var streamURLsByChannel: [String: [URL]] = [:]
+        for stream in streams {
+            guard let channelID = stream.channel else { continue }
+            streamURLsByChannel[channelID, default: []].append(stream.url)
+        }
+        for (channelID, official) in OfficialStreams.urlByChannelID {
+            var urls = streamURLsByChannel[channelID] ?? []
+            urls.removeAll { $0 == official }
+            streamURLsByChannel[channelID] = [official] + urls
+        }
         let logoURLByChannel = bestLogoByChannel(logos)
         let countryNameByCode = Dictionary(
             countries.map { ($0.code, $0.name) },
@@ -29,9 +38,10 @@ enum CatalogJoin {
                 id: entry.id,
                 name: entry.name,
                 country: entry.country.flatMap { countryNameByCode[$0] },
+                countryCode: entry.country,
                 categories: (entry.categories ?? []).compactMap { categoryNameByID[$0] },
                 logoURL: logoURLByChannel[entry.id],
-                streamURL: streamURLByChannel[entry.id]
+                streamSources: streamURLsByChannel[entry.id] ?? []
             )
         }
     }

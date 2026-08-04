@@ -5,6 +5,7 @@ import SwiftUI
 struct ChannelTileView: View {
     let channel: Channel
     let isSelected: Bool
+    var nowPlaying: String?
 
     @State private var isHovering = false
 
@@ -23,7 +24,16 @@ struct ChannelTileView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 10)
                 .padding(.top, 10)
-                .padding(.bottom, 12)
+                .padding(.bottom, nowPlaying == nil ? 12 : 2)
+
+            if let nowPlaying {
+                Text(nowPlaying)
+                    .font(.system(size: 10))
+                    .foregroundStyle(Theme.accent.opacity(0.9))
+                    .lineLimit(1)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 10)
+            }
         }
         .frame(width: 132)
         .background(
