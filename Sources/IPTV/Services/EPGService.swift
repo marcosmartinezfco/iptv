@@ -26,9 +26,9 @@ struct EPGService: Sendable {
         urlSession = URLSession(configuration: config)
     }
 
+    // swiftformat:disable trailingCommas
     /// iptv-org channel id → the feed's channel id, for names normalization
     /// can't bridge. Keep sorted; verified against the ES1 feed 2026-08-04.
-    // swiftformat:disable trailingCommas
     static let feedIDByChannelID: [String: String] = [
         "24Horas.es": "Canal.24.horas.es",
         "Clan.es": "Clan.TVE.es"
