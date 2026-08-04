@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var countryPreferences = CountryPreferencesStore()
     @State private var viewModel = ChannelListViewModel()
     @State private var playerViewModel = PlayerViewModel()
+    @State private var epgStore = EPGStore()
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     private let gridColumns = [GridItem(.adaptive(minimum: 132, maximum: 132), spacing: 14)]
@@ -26,9 +27,13 @@ struct ContentView: View {
             if viewModel.countryFilter == nil {
                 viewModel.countryFilter = defaultCountries.first
             }
+            epgStore.loadGuideIfNeeded(countryCode: viewModel.selectedCountryCode)
         }
         .onChange(of: viewModel.selectedChannel) { _, newChannel in
             playerViewModel.play(channel: newChannel)
+        }
+        .onChange(of: viewModel.countryFilter) { _, _ in
+            epgStore.loadGuideIfNeeded(countryCode: viewModel.selectedCountryCode)
         }
         .preferredColorScheme(.dark)
         .tint(Theme.accent)
@@ -144,7 +149,8 @@ struct ContentView: View {
                         ForEach(viewModel.displayChannels) { channel in
                             ChannelTileView(
                                 channel: channel,
-                                isSelected: viewModel.selectedChannel == channel
+                                isSelected: viewModel.selectedChannel == channel,
+                                nowPlaying: epgStore.currentProgramme(for: channel)?.title
                             )
                             .onTapGesture {
                                 viewModel.selectedChannel = channel
@@ -197,6 +203,7 @@ struct ContentView: View {
             if let channel = viewModel.selectedChannel {
                 PlayerView(viewModel: playerViewModel)
                     .navigationTitle(channel.name)
+                    .navigationSubtitle(epgStore.currentProgramme(for: channel)?.title ?? "")
             } else {
                 VStack(spacing: 14) {
                     Image(systemName: "play.tv")

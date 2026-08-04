@@ -35,9 +35,16 @@ final class ChannelListViewModel {
         Set(channels.compactMap(\.country)).sorted()
     }
 
+    /// ISO code for the selected country (the filter holds display names), used
+    /// to pick country-scoped feeds like the programme guide.
+    var selectedCountryCode: String? {
+        guard let countryFilter else { return nil }
+        return channels.first { $0.country == countryFilter }?.countryCode
+    }
+
     var filteredChannels: [Channel] {
         channels.filter { channel in
-            channel.streamURL != nil
+            !channel.streamSources.isEmpty
                 && (countryFilter == nil || channel.country == countryFilter)
                 && (searchText.isEmpty || channel.name.localizedCaseInsensitiveContains(searchText))
                 && (!showOnlyWorkingChannels || (healthStore?.isWorking(channel.id) ?? true))
@@ -80,7 +87,7 @@ final class ChannelListViewModel {
 
         let targets: [(id: Channel.ID, url: URL)] = channels.compactMap { channel in
             guard channel.country == countryFilter,
-                  let url = channel.streamURL,
+                  let url = channel.streamSources.first,
                   !healthStore.isProbed(channel.id),
                   channel.id != selectedChannel?.id
             else { return nil }

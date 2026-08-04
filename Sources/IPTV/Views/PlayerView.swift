@@ -16,7 +16,7 @@ struct PlayerView: View {
             case .idle:
                 EmptyView()
             case .loading:
-                ProgressView("Loading stream…")
+                ProgressView(viewModel.isFailingOver ? "Trying another source…" : "Loading stream…")
             case .playing:
                 EmptyView()
             case .failed:
