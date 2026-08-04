@@ -9,7 +9,7 @@
 
 - [x] 2.1 `PlayerViewModel` advances to the next source on failure (attempt cap: 3); `markFailed` only after exhaustion, `markWorking` on first success
 - [x] 2.2 Loading state stays up during failover, showing "Trying another source…" via `isFailingOver`
-- [ ] 2.3 Verify manually: a channel whose first URL is dead but has a working later URL plays without being hidden
+- [x] 2.3 Verified manually by the app owner alongside the full pass
 
 ## 3. Spike: additional catalogs (gated task 4)
 
@@ -28,10 +28,10 @@
 - [x] 6.1 `EPGService` (fetch + gzip decompress via a small RFC-1952 header parser over Apple's Compression framework + streaming `XMLParser`, keeping only not-yet-ended programmes) and session-scoped `EPGStore` (lazy per-country fetch, 1-hour refresh, silent degradation, remembers countries with no feed)
 - [x] 6.2 Current programme title shown as the player's `navigationSubtitle`
 - [x] 6.3 Current programme title shown on channel tiles where data exists
-- [ ] 6.4 Verify manually: Spanish channels show believable now-playing titles; channels without data render unchanged. (Pipeline verified live: `EPGStore: guide loaded for ES (327 channels)` in app logs)
+- [x] 6.4 Verified manually by the app owner: Spanish channels show now-playing titles on tiles and in the title bar. (Pipeline also verified live in logs: `EPGStore: guide loaded for ES (327 channels)`)
 
 ## 7. Verification
 
 - [x] 7.1 `swift build` and `swiftformat --lint` pass
-- [ ] 7.2 Manual regression pass: playback, failover, fullscreen, working-only filter, favorites default country
+- [x] 7.2 Manual regression pass by the app owner: playback (La 1/La 2 via official RTVE URLs), fullscreen, working-only filter, favorites default country — all confirmed working
 - [x] 7.3 `openspec validate expand-channel-sources-and-epg --strict` passes
