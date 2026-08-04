@@ -1,35 +1,50 @@
+> **OUTCOME: ABANDONED (2026-08-04).** The migration was implemented end-to-end and
+> built cleanly, but was reverted before merging: VLCKit 4.0.0-a22 (the newest
+> available tag) has a hang bug on macOS — its CoreAudio output module enters an
+> infinite device-reconfiguration loop when audio devices appear/disappear (observed
+> live, triggered by an iPhone Continuity microphone: `AudioObjectAddPropertyListener
+> failed … OSStatus: 1852797029` → "audio device configuration changed, resetting
+> cache" → repeat forever), leaving the app unresponsive. No app-level workaround
+> exists: VLCKit exposes no API to pin an output device or disable hotplug
+> monitoring, no libVLC option covers it, and the known fixes for this bug class
+> (debounce/init guards) live inside the native audio backend — fixable only by
+> patching and rebuilding libVLC itself. The playback code stays on AVKit. Revisit
+> only if a stable (non-alpha) VLCKit 4.x ships with this fixed.
+>
+> Task statuses below reflect what was actually done before the revert.
+
 ## 1. Spike: VLCKit integration (gates everything below)
 
-- [ ] 1.1 Find a working SPM integration path for VLCKit on macOS (proper Swift package, or a `.binaryTarget` against VLCKit's distributed `.xcframework`)
-- [ ] 1.2 Confirm the result is a **dynamically** linked framework, not statically linked — required for LGPL compliance now that this project distributes compiled binaries via `Scripts/package-app.sh`/the release workflow
-- [ ] 1.3 Build a throwaway minimal `VLCMediaPlayer` + `VLCVideoView` proof of concept against one real `iptv-org` stream URL, confirm it plays
-- [ ] 1.4 **Decision point**: if 1.1 or 1.2 fail cleanly, STOP — report back to the app owner with what was tried and why, rather than picking a workaround (e.g. static linking, manual framework vendoring) unilaterally
+- [x] 1.1 SPM integration found: VideoLAN's own `videolan/vlckit` repo carries a `Package.swift` on tagged releases (undocumented; alpha `4.0.0-a22`) with a checksum-pinned `binaryTarget` at `download.videolan.org` targeting macOS 10.13+
+- [x] 1.2 Dynamic linking confirmed via `otool -L`/`file`: the XCFramework is a dynamic library, SwiftPM wires `@loader_path` rpath + copies `VLCKit.framework` beside the binary — LGPL-compliant
+- [x] 1.3 Proof of concept: full implementation built and launched; playback itself was never user-verified because the audio-loop hang surfaced first
+- [x] 1.4 Decision point exercised twice: (a) third-party-wrapper-only SPM finding → owner approved proceeding once VideoLAN's own package was found; (b) hang bug + no workaround → owner chose revert
 
-## 2. Playback engine swap
+## 2. Playback engine swap (implemented, then reverted)
 
-- [ ] 2.1 Add the VLCKit dependency to `Package.swift` per the spike's chosen integration method
-- [ ] 2.2 In `PlayerViewModel`, replace `AVPlayer`/`AVPlayerItem` with `VLCMediaPlayer`, mapping its delegate-based state callbacks onto the existing `PlaybackState` enum (`idle`/`loading`/`playing`/`failed`/`unavailable`) — no change to the enum itself or to `StreamHealthStore` integration
-- [ ] 2.3 Verify `markWorking`/`markFailed` still fire correctly against the new engine's state callbacks
+- [x] 2.1 VLCKit dependency added to `Package.swift` (`exact: "4.0.0-a22"`) — reverted
+- [x] 2.2 `PlayerViewModel` swapped to `VLCMediaPlayer` + `VLCMedia`, delegate proxy (`NSObject`-conforming) mapping `VLCMediaPlayerState` onto the existing `PlaybackState` enum; real state cases verified from the framework's own headers (`.nothingSpecial/.opening/.playing/.paused/.stopped/.stopping/.error` — no `.buffering`/`.ended` cases; buffering is a separate delegate callback) — reverted
+- [ ] 2.3 `markWorking`/`markFailed` never verified against real playback — the hang preempted testing
 
-## 3. Main player view
+## 3. Main player view (implemented, then reverted)
 
-- [ ] 3.1 Replace `AVPlayerContainerView` in `PlayerView.swift` with a VLCKit video view wrapper (`NSViewRepresentable` around `VLCVideoView`/a plain `NSView` VLCKit renders into)
-- [ ] 3.2 Add a minimal custom transport control (mute/volume at minimum — live TV has no timeline to scrub)
-- [ ] 3.3 Remove the AVKit-specific lines (`showsFullScreenToggleButton`, `allowsPictureInPicturePlayback`, `allowsMagnification`) — no VLCKit equivalents
-- [ ] 3.4 Verify manually: channel plays, loading/failed/unavailable states still render correctly
+- [x] 3.1 `AVPlayerContainerView` replaced with a `VLCVideoView` wrapper (re-claiming `player.drawable` on every SwiftUI update, since VLC renders to a single drawable — unlike AVPlayer's multi-layer rendering) — reverted
+- [x] 3.2 Toolbar mute button added (`player.audio?.isMuted`) — reverted
+- [x] 3.3 AVKit-specific lines removed — reverted
+- [ ] 3.4 Manual verification preempted by the hang
 
-## 4. Fullscreen presenter
+## 4. Fullscreen presenter (implemented, then reverted)
 
-- [ ] 4.1 Re-point `StreamFullScreenPresenter` at the VLCKit view instead of a second `AVPlayerView`
-- [ ] 4.2 Verify manually: toolbar expand button still enters/exits the dedicated fullscreen window correctly, Esc still dismisses it, playback continues uninterrupted across the transition
+- [x] 4.1 `StreamFullScreenPresenter` re-pointed at a `VLCVideoView` — reverted
+- [ ] 4.2 Manual verification preempted by the hang
 
-## 5. License compliance
+## 5. License compliance (implemented, then reverted)
 
-- [ ] 5.1 Add an LGPL notice for VLCKit/libVLC to the README, linking to VLC's source
-- [ ] 5.2 Re-confirm (post-integration) that the shipped `.app` from `Scripts/package-app.sh` embeds VLCKit as a dynamic framework, not statically linked
+- [x] 5.1 LGPL notice added to README — reverted with the rest
+- [ ] 5.2 Release-build packaging check never reached
 
 ## 6. Verification
 
-- [ ] 6.1 `swift build` and `swiftformat --lint` pass
-- [ ] 6.2 Manual pass: play several channels that previously failed in AVPlayer (if any known from prior testing), confirm improvement; play several that already worked, confirm no regression
-- [ ] 6.3 `openspec validate migrate-playback-to-vlckit --strict` passes
+- [x] 6.1 `swift build` and `swiftformat --lint` passed on the VLCKit implementation, and pass again after the revert (working tree back to the exact AVKit code shipped in v0.1.0)
+- [ ] 6.2 The comparative channel test never ran — the app hung (infinite CoreAudio device-reconfiguration loop) before playback could be exercised
+- [x] 6.3 `openspec validate migrate-playback-to-vlckit --strict` passes

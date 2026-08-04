@@ -1,3 +1,9 @@
+> **OUTCOME: ABANDONED (2026-08-04).** See the note at the top of `tasks.md` for the
+> full account: VLCKit 4.0.0-a22 hangs on macOS in an infinite CoreAudio
+> device-reconfiguration loop with no app-level workaround. Playback stays on AVKit;
+> the spec delta in `specs/` was **not** applied to `openspec/specs/`. Revisit only if
+> a stable VLCKit 4.x ships with the audio-device handling fixed.
+
 ## Context
 
 Playback today is entirely AVFoundation: `PlayerViewModel` wraps `AVPlayer`/`AVPlayerItem` and observes `.status` via KVO to drive a `PlaybackState` enum (`idle`/`loading`/`playing`/`failed`/`unavailable`) that also feeds `StreamHealthStore` (`markWorking`/`markFailed` on success/failure). Two views embed `AVPlayerView` today: `PlayerView`'s main pane and `StreamFullScreenPresenter`'s dedicated borderless fullscreen window (built last change specifically to route around AVKit/Spaces-fullscreen limitations — that windowing shell is independent of AVKit and doesn't need to change here). AVKit gives us, for free: floating transport controls, a native fullscreen toggle, Picture-in-Picture, and trackpad pinch-to-zoom.
