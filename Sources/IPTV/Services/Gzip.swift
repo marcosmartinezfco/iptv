@@ -13,7 +13,36 @@ enum Gzip {
     }
 
     static func decompress(_ data: Data) throws -> Data {
-        // Fixed header: magic (1f 8b), method (08 = deflate), flags, mtime(4), xfl, os.
+        let payloadStart = try deflatePayloadStart(in: data)
+        // Trailer: CRC32(4) + ISIZE(4). ISIZE = uncompressed size mod 2^32.
+        guard data.endIndex - payloadStart > 8 else { throw GzipError.truncated }
+        let deflated = data[payloadStart ..< data.endIndex - 8]
+        let sizeBytes = data[(data.endIndex - 4)...]
+        var expectedSize = 0
+        for (index, byte) in sizeBytes.enumerated() {
+            expectedSize |= Int(byte) << (8 * index)
+        }
+
+        let capacity = max(expectedSize, deflated.count * 4)
+        let destination = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
+        defer { destination.deallocate() }
+
+        let written = deflated.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> Int in
+            guard let source = raw.bindMemory(to: UInt8.self).baseAddress else { return 0 }
+            return compression_decode_buffer(
+                destination, capacity,
+                source, raw.count,
+                nil, COMPRESSION_ZLIB
+            )
+        }
+        guard written > 0 else { throw GzipError.decompressionFailed }
+        return Data(bytes: destination, count: written)
+    }
+
+    /// Walks the variable-length gzip member header (RFC 1952) and returns the
+    /// index where the raw DEFLATE payload begins.
+    private static func deflatePayloadStart(in data: Data) throws -> Data.Index {
+        // Fixed part: magic (1f 8b), method (08 = deflate), flags, mtime(4), xfl, os.
         guard data.count > 18, data[data.startIndex] == 0x1F, data[data.startIndex + 1] == 0x8B else {
             throw GzipError.notGzip
         }
@@ -37,28 +66,6 @@ enum Gzip {
         if flags & 0x02 != 0 { // FHCRC: 2 bytes
             offset += 2
         }
-        // Trailer: CRC32(4) + ISIZE(4). ISIZE = uncompressed size mod 2^32.
-        guard data.endIndex - offset > 8 else { throw GzipError.truncated }
-        let deflated = data[offset ..< data.endIndex - 8]
-        let sizeBytes = data[(data.endIndex - 4)...]
-        var expectedSize = 0
-        for (i, byte) in sizeBytes.enumerated() {
-            expectedSize |= Int(byte) << (8 * i)
-        }
-
-        let capacity = max(expectedSize, deflated.count * 4)
-        let destination = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
-        defer { destination.deallocate() }
-
-        let written = deflated.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> Int in
-            guard let source = raw.bindMemory(to: UInt8.self).baseAddress else { return 0 }
-            return compression_decode_buffer(
-                destination, capacity,
-                source, raw.count,
-                nil, COMPRESSION_ZLIB
-            )
-        }
-        guard written > 0 else { throw GzipError.decompressionFailed }
-        return Data(bytes: destination, count: written)
+        return offset
     }
 }

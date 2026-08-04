@@ -28,10 +28,12 @@ struct EPGService: Sendable {
 
     /// iptv-org channel id → the feed's channel id, for names normalization
     /// can't bridge. Keep sorted; verified against the ES1 feed 2026-08-04.
+    // swiftformat:disable trailingCommas
     static let feedIDByChannelID: [String: String] = [
         "24Horas.es": "Canal.24.horas.es",
-        "Clan.es": "Clan.TVE.es",
+        "Clan.es": "Clan.TVE.es"
     ]
+    // swiftformat:enable trailingCommas
 
     /// Lowercased alphanumerics with the trailing country suffix removed:
     /// "La.1.es" → "la1", "laSexta.es" → "lasexta". Collisions are theoretically
@@ -49,7 +51,10 @@ struct EPGService: Sendable {
     /// channel id. Throws on network/decompression errors; a missing feed for the
     /// country (404) throws `EPGError.noFeedForCountry`.
     func fetchGuide(countryCode: String) async throws -> [String: [EPGProgramme]] {
-        let url = URL(string: "https://epgshare01.online/epgshare01/epg_ripper_\(countryCode.uppercased())1.xml.gz")!
+        let feedPath = "https://epgshare01.online/epgshare01/epg_ripper_\(countryCode.uppercased())1.xml.gz"
+        guard let url = URL(string: feedPath) else {
+            throw EPGError.noFeedForCountry
+        }
         let (data, response) = try await urlSession.data(from: url)
         if let http = response as? HTTPURLResponse, http.statusCode == 404 {
             throw EPGError.noFeedForCountry
