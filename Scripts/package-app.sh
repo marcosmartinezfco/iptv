@@ -22,7 +22,9 @@ APP_BUNDLE="${3:-$ROOT/.build/$APP_NAME.app}"
 BUILD_DIR="$ROOT/.build/$CONFIG"
 
 echo "Building ($CONFIG)..."
-swift build --configuration "$CONFIG" --package-path "$ROOT"
+# Pin SwiftPM's native build system: the newer default (Swift Build) compiles
+# dependency asset catalogs (Pow's) with actool, which fails on Xcode 27.
+swift build --build-system native --configuration "$CONFIG" --package-path "$ROOT"
 
 echo "Packaging $APP_BUNDLE (version $VERSION)..."
 rm -rf "$APP_BUNDLE"
