@@ -70,7 +70,7 @@ struct ChannelTileView: View {
                 if let image = state.image {
                     image
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                 } else {
                     fallbackIcon
                 }
